@@ -4,7 +4,12 @@ var Otserv = (function () {
     function Otserv() {
     }
     Otserv.start = function () {
-        var test = new rsa_1.RSA();
+        var g_rsa = rsa_1.RSA.getInstance();
+        var text = 'Hello RSA!';
+        var encrypted = g_rsa.getRSA().encrypt(text, 'base64');
+        console.log('encrypted: ', encrypted);
+        var decrypted = g_rsa.getRSA().decrypt(encrypted, 'utf8');
+        console.log('decrypted: ', decrypted);
         console.log("Server started!");
     };
     return Otserv;

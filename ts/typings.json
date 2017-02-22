@@ -1,6 +1,5 @@
 {
   "globalDependencies": {
-    "big-integer": "registry:dt/big-integer#0.0.0+20160510002910",
     "core-js": "registry:dt/core-js#0.9.7+20161130133742",
     "node": "registry:dt/node#7.0.0+20170204020307"
   }
