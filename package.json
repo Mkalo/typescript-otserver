@@ -1,24 +1,24 @@
 {
-  "name": "ts-npm-module",
-  "version": "1.0.5",
-  "description": "A sample TypeScript npm module",
+  "name": "typescript-otserver",
+  "version": "1.0.0",
+  "description": "An OpenTibia server made with TypeScript.",
   "main": "js/index.js",
   "typings": "js/index",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./js/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/basarat/ts-npm-module.git"
+    "url": "git+https://github.com/Mkalo/typescript-otserver.git"
   },
   "keywords": [
     "typescript",
     "atom"
   ],
-  "author": "basaratali@gmail.com",
+  "author": "Mkalo <mkalo@xtibia.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/basarat/ts-npm-module/issues"
+    "url": "https://github.com/Mkalo/typescript-otserver/issues"
   },
-  "homepage": "https://github.com/basarat/ts-npm-module#readme"
+  "homepage": "https://github.com/Mkalo/typescript-otserver#readme"
 }
