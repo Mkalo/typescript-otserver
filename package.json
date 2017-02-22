@@ -27,5 +27,8 @@
     "concurrently": "^3.3.0",
     "typescript": "^2.1.6",
     "typings": "^2.1.0"
+  },
+  "dependencies": {
+    "big-integer": "^1.6.17"
   }
 }

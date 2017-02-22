@@ -16,10 +16,10 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
+        "./typings/index.d.ts",
         "./index.ts",
-        "./typings/node/node.d.ts",
-        "./typings/tsd.d.ts",
 
-        "./src/otserv.ts"
+        "./src/otserv.ts",
+        "./src/rsa.ts"
     ]
 }
