@@ -21,7 +21,7 @@ export class NetworkMessage {
 		return this.position + bytes - 1 < this.dataBuffer.length;
 	}
 
-	addUint8(value: number) {
+	addUInt8(value: number) {
 		if (!this.canAdd(1)) {
 			return;
 		}
@@ -29,7 +29,7 @@ export class NetworkMessage {
 		this.position = this.dataBuffer.writeUInt8(NumericType.getUInt8(value), this.position);
 	}
 
-	addUint16(value: number) {
+	addUInt16(value: number) {
 		if (!this.canAdd(2)) {
 			return;
 		}
@@ -37,7 +37,7 @@ export class NetworkMessage {
 		this.position = this.dataBuffer.writeUInt16LE(NumericType.getUInt16(value), this.position);
 	}
 
-	addUint32(value: number) {
+	addUInt32(value: number) {
 		if (!this.canAdd(4)) {
 			return;
 		}
@@ -75,13 +75,13 @@ export class NetworkMessage {
 			return;
 		}
 
-		this.addUint16(size);
+		this.addUInt16(size);
 		this.position += this.dataBuffer.write(value, this.position, value.length);
 	}
 
 	addPaddingBytes(bytes: number) {
 		for (var i = 0; i < bytes; i++) {
-			this.addUint8(0x33);
+			this.addUInt8(0x33);
 		}
 	}
 
