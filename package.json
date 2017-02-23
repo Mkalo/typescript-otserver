@@ -29,6 +29,7 @@
     "typings": "^2.1.0"
   },
   "dependencies": {
-    "big-integer": "^1.6.17"
+    "big-integer": "^1.6.17",
+    "node-rsa": "^0.4.2"
   }
 }
