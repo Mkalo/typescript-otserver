@@ -5,9 +5,9 @@
   "main": "js/index.js",
   "typings": "js/index",
   "scripts": {
-    "build": "tsc -p ./ts",
-    "start": "node ./js/index.js",
-    "buildstart": "npm run build && concurrently \"tsc -w\" \"npm run start\" "
+    "build": "tsc",
+    "start": "node ./bin",
+    "buildstart": "npm run build & npm start"
   },
   "repository": {
     "type": "git",
