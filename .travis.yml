@@ -13,8 +13,8 @@ install:
   - npm install
 
 script:
-  - npm build
-  - npm start
+  - npm run build
+  - npm run start
 
 cache:
   directories:
