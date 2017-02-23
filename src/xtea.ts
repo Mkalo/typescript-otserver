@@ -25,7 +25,7 @@ export class XTEA {
 
 			let sum: number = 0;
 
-			for (var i = 32; --i >= 0;) {
+			for (let i = 32; --i >= 0;) {
 				v0 += ((NumericType.getUInt32(v1 << 4) ^ (v1 >>> 5)) + v1) ^ (sum + this.key[sum & 3]);
 				v0 = NumericType.getUInt32(v0);
 				sum = NumericType.getUInt32(sum - XTEA.delta);
@@ -53,7 +53,7 @@ export class XTEA {
 
 			let sum: number = 0xC6EF3720;
 
-			for (var i = 32; --i >= 0;) {
+			for (let i = 32; --i >= 0;) {
 				v1 -= ((NumericType.getUInt32(v0 << 4) ^ (v0 >>> 5)) + v0) ^ (sum + this.key[(sum >> 11) & 3]);
 				v1 = NumericType.getUInt32(v1);
 				sum = NumericType.getUInt32(sum + XTEA.delta);

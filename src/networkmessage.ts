@@ -80,7 +80,7 @@ export class NetworkMessage {
 	}
 
 	addPaddingBytes(bytes: number) {
-		for (var i = 0; i < bytes; i++) {
+	    for (let i = 0; i < bytes; i++) {
 			this.addUInt8(0x33);
 		}
 	}
