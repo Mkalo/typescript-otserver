@@ -11,7 +11,10 @@ branches:
 
 install:
   - npm install
+
+script:
   - npm build
+  - npm start
 
 cache:
   directories:
