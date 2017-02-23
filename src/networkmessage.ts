@@ -26,7 +26,7 @@ export class NetworkMessage {
       return;
     }
 
-    this.position = this.dataBuffer.writeUInt8(NumericType.getUint8(value), this.position);
+    this.position = this.dataBuffer.writeUInt8(NumericType.getUInt8(value), this.position);
   }
 
   addUint16(value: number) {
@@ -34,7 +34,7 @@ export class NetworkMessage {
       return;
     }
 
-    this.position = this.dataBuffer.writeUInt16LE(NumericType.getUint16(value), this.position);
+    this.position = this.dataBuffer.writeUInt16LE(NumericType.getUInt16(value), this.position);
   }
 
   addUint32(value: number) {
@@ -42,7 +42,7 @@ export class NetworkMessage {
       return;
     }
 
-    this.position = this.dataBuffer.writeUInt32LE(NumericType.getUint32(value), this.position);
+    this.position = this.dataBuffer.writeUInt32LE(NumericType.getUInt32(value), this.position);
   }
 
   addInt8(value: number) {

@@ -2,15 +2,15 @@ export interface uint8 {}
 
 export class NumericType {
 
-  static getUint8 (num: number): number {
+  static getUInt8 (num: number): number {
     return num & 255;
   }
 
-  static getUint16 (num: number): number {
+  static getUInt16 (num: number): number {
     return num & 65535;
   }
 
-  static getUint32 (num: number): number {
+  static getUInt32 (num: number): number {
     return num >>> 0;
   }
 

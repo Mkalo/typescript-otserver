@@ -26,11 +26,11 @@ export class XTEA {
         let sum: number = 0;
 
         for(var i = 32; --i >= 0;) {
-          v0 += ((NumericType.getUint32(v1 << 4) ^ (v1 >>> 5)) + v1) ^ (sum + this.key[sum & 3]);
-          v0 = NumericType.getUint32(v0);
-    			sum = NumericType.getUint32(sum - XTEA.delta);
-    			v1 += ((NumericType.getUint32(v0 << 4) ^ (v0 >>> 5)) + v0) ^ (sum + this.key[(sum >> 11) & 3]);
-          v1 = NumericType.getUint32(v1);
+          v0 += ((NumericType.getUInt32(v1 << 4) ^ (v1 >>> 5)) + v1) ^ (sum + this.key[sum & 3]);
+          v0 = NumericType.getUInt32(v0);
+    			sum = NumericType.getUInt32(sum - XTEA.delta);
+    			v1 += ((NumericType.getUInt32(v0 << 4) ^ (v0 >>> 5)) + v0) ^ (sum + this.key[(sum >> 11) & 3]);
+          v1 = NumericType.getUInt32(v1);
         }
 
         buffer.writeUInt32LE(v0, readPos);
@@ -54,11 +54,11 @@ export class XTEA {
       let sum: number = 0xC6EF3720;
 
       for(var i = 32; --i >= 0;) {
-        v1 -= ((NumericType.getUint32(v0 << 4) ^ (v0 >>> 5)) + v0) ^ (sum + this.key[(sum >> 11) & 3]);
-        v1 = NumericType.getUint32(v1);
-        sum = NumericType.getUint32(sum + XTEA.delta);
-        v0 -= ((NumericType.getUint32(v1 << 4) ^ (v1 >>> 5)) + v1) ^ (sum + this.key[sum & 3]);
-        v0 = NumericType.getUint32(v0);
+        v1 -= ((NumericType.getUInt32(v0 << 4) ^ (v0 >>> 5)) + v0) ^ (sum + this.key[(sum >> 11) & 3]);
+        v1 = NumericType.getUInt32(v1);
+        sum = NumericType.getUInt32(sum + XTEA.delta);
+        v0 -= ((NumericType.getUInt32(v1 << 4) ^ (v1 >>> 5)) + v1) ^ (sum + this.key[sum & 3]);
+        v0 = NumericType.getUInt32(v0);
       }
 
       buffer.writeUInt32LE(v0, readPos);
