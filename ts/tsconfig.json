@@ -20,6 +20,9 @@
         "./index.ts",
 
         "./src/otserv.ts",
-        "./src/rsa.ts"
+        "./src/rsa.ts",
+        "./src/ctypes.ts",
+        "./src/networkmessage.ts",
+        "./src/xtea.ts"
     ]
 }
