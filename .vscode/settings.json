@@ -4,5 +4,10 @@
 		"node_modules/": true,
 		".vscode": true,
 		"bin": true
+	},
+
+	"editor": {
+		"detectIndentation": false,
+		"tabSize": 4
 	}
 }
