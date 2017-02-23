@@ -1,6 +1,8 @@
 import { RSA } from './rsa';
 import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkmessage";
+import { Service } from "./server";
+import { ProtocolLogin } from "./protocol";
 
 export class Otserv {
   static start() {
@@ -26,6 +28,9 @@ export class Otserv {
     for(var i = 0; i < msg.getLength(); i++) {
       console.log(i + ": " + msg.getOutputBuffer()[i]);
     }*/
+
+    let service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
+    console.log(service.is_checksummed());
 
     console.log("Server started!");
   }
