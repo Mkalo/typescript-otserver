@@ -1,5 +1,3 @@
-export interface uint8 { }
-
 export class NumericType {
 
 	static getUInt8(num: number): number {
