@@ -1,7 +1,9 @@
 {
-	"version": "0.1.0",
-	"command": "tsc",
-	"isShellCommand": true,
-	"showOutput": "silent",
-	"problemMatcher": "$tsc"
+    "version": "0.1.0",
+    "command": "npm",
+    "taskName": "tsc-watch",
+    "args": ["run", "build"],
+    "isShellCommand": true,
+    "showOutput": "silent",
+    "problemMatcher": "$tsc-watch"
 }
