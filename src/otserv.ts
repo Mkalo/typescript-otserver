@@ -4,6 +4,7 @@ import { NetworkMessage } from "./networkmessage";
 import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
 import { ItemType } from "./items";
+import { Items } from "./items";
 
 export class Otserv {
 	config: Object;
@@ -39,7 +40,10 @@ export class Otserv {
 		let service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
 		console.log(service.is_checksummed());
 
-        ItemType.xerapussy();
+        Items.loadItems();
+        // test itemtype constructor/methods
+        let it: ItemType = new ItemType("dirt");
+        console.log(it.getId() + ", " + it.getName())
 
 		console.log("Server started!");
 	}
