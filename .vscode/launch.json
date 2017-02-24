@@ -6,7 +6,7 @@
             "request": "launch",
             "name": "Launch Program",
             "preLaunchTask": "tsc-watch",
-            "program": "${workspaceRoot}/bin/index.js",
+            "program": "${workspaceRoot}/bin/src/index.js",
             "cwd": "${workspaceRoot}"
         },
         {

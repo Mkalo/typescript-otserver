@@ -5,7 +5,13 @@ import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
 
 export class Otserv {
-	static start() {
+	config: Object;
+
+	constructor(config: Object) {
+		this.config = config;
+	}
+
+	start() {
 
 		/*let g_rsa: RSA = RSA.getInstance();
 		let text: string = 'Hello RSA!';

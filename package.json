@@ -6,7 +6,7 @@
   "typings": "js/index",
   "scripts": {
     "build": "tsc",
-    "start": "node ./bin",
+    "start": "node ./bin/src",
     "buildstart": "npm run build & npm start"
   },
   "repository": {
