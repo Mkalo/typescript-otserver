@@ -6,6 +6,7 @@
   "typings": "js/index",
   "scripts": {
     "build": "tsc",
+	"watch": "tsc -w",
     "start": "node ./bin/src",
     "buildstart": "npm run build & npm start"
   },
@@ -24,9 +25,7 @@
   },
   "homepage": "https://github.com/Mkalo/typescript-otserver#readme",
   "devDependencies": {
-    "concurrently": "^3.3.0",
-    "typescript": "^2.2.1",
-    "typings": "^2.1.0"
+    "typescript": "^2.2.1"
   },
   "dependencies": {
     "@types/node": "^7.0.5",
