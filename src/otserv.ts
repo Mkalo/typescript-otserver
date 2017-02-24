@@ -7,15 +7,15 @@ import { ItemType } from "./items";
 import { Items } from "./items";
 import { ConfigManager } from "./configmanager";
 
-export let g_configmanager: ConfigManager = new ConfigManager();
-export let g_rsa: RSA = RSA.getInstance();
+export const g_configmanager: ConfigManager = new ConfigManager();
+export const g_rsa: RSA = RSA.getInstance();
 
 export class Otserv {
     
 	public start() {
         if (!g_configmanager.load()) throw Error("Unable to load config.js. Did you copy `config.js.sample` to `config.js`?");
 
-		let service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
+		const service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
 		console.log(service.is_checksummed());
 		console.log("Server started!");
 	}

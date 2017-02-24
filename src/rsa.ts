@@ -26,9 +26,9 @@ export class RSA {
 		this.n = BigInteger(this.p.multiply(this.q).toString());
 		this.e = BigInteger(65537);
 
-		let p_1: BigInteger = this.p.subtract(1);
-		let q_1: BigInteger = this.q.subtract(1);
-		let pq_1: BigInteger = p_1.multiply(q_1);
+		const p_1: BigInteger = this.p.subtract(1);
+		const q_1: BigInteger = this.q.subtract(1);
+		const pq_1: BigInteger = p_1.multiply(q_1);
 
 		this.d = this.e.modInv(pq_1);
 		this.dmp1 = this.d.mod(p_1);
