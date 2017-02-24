@@ -8,7 +8,7 @@
     "build": "tsc",
 	"watch": "tsc -w",
     "start": "node ./bin/src",
-    "buildstart": "npm run build & npm start"
+    "buildstart": "npm run build && npm start"
   },
   "repository": {
     "type": "git",
