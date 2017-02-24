@@ -3,6 +3,7 @@ import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkmessage";
 import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
+import { ItemType } from "./items";
 
 export class Otserv {
 	config: Object;
@@ -37,6 +38,8 @@ export class Otserv {
 
 		let service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
 		console.log(service.is_checksummed());
+
+        ItemType.xerapussy();
 
 		console.log("Server started!");
 	}
