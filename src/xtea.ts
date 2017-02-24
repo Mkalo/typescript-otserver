@@ -12,13 +12,13 @@ export class XTEA {
 	}
 
 	public encrypt(msg: NetworkMessage) {
-		let paddingBytes: number = msg.getLength() % 8;
+		const paddingBytes: number = msg.getLength() % 8;
 		if (paddingBytes > 0) {
 			msg.addPaddingBytes(8 - paddingBytes);
 		}
 
-		let buffer: Buffer = msg.getOutputBuffer();
-		let messageLength: number = msg.getLength();
+		const buffer: Buffer = msg.getOutputBuffer();
+		const messageLength: number = msg.getLength();
 		let readPos: number = 0;
 		while (readPos < messageLength) {
 			let v0: number = buffer.readUInt32LE(readPos);
@@ -45,8 +45,8 @@ export class XTEA {
 			return false;
 		}
 
-		let buffer: Buffer = msg.getOutputBuffer();
-		let messageLength: number = msg.getLength();
+		const buffer: Buffer = msg.getOutputBuffer();
+		const messageLength: number = msg.getLength();
 		let readPos: number = 0;
 		while (readPos < messageLength) {
 			let v0: number = buffer.readUInt32LE(readPos);
