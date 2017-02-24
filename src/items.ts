@@ -1,22 +1,28 @@
 let loadedItems = []
 
 export class ItemType {
+    
     private id: number;
     private name: string;
-    constructor(arg: number | string) {
+
+    public constructor(arg: number | string) {
         this.id = typeof arg === "number" ? arg : loadedItems[arg];
         this.name = typeof arg === "string" ? arg : loadedItems[arg];
     }
-    getId(): number {
+
+    public getId(): number {
         return this.id;
     }
-    getName(): string {
+
+    public getName(): string {
         return this.name;
     }
+
 }
 
 export class Items {
-    static loadItems(): boolean {
+
+    public static loadItems(): boolean {
         let items: any = null;
         try {
             items = require("../items.js");
@@ -31,4 +37,5 @@ export class Items {
             loadedItems[name] = id;
         }
     }
+
 }

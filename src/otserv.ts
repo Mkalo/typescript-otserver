@@ -7,13 +7,14 @@ import { ItemType } from "./items";
 import { Items } from "./items";
 
 export class Otserv {
-	config: Object;
+    
+	private config: Object;
 
-	constructor(config: Object) {
+	public constructor(config: Object) {
 		this.config = config;
 	}
 
-	start() {
+	public start() {
 
 		/*let g_rsa: RSA = RSA.getInstance();
 		let text: string = 'Hello RSA!';
@@ -47,4 +48,5 @@ export class Otserv {
 
 		console.log("Server started!");
 	}
+
 }

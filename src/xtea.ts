@@ -2,15 +2,16 @@ import { NumericType } from "./ctypes";
 import { NetworkMessage } from "./networkmessage";
 
 export class XTEA {
-	static readonly delta: number = 0x61C88647;
 
-	key: Uint32Array;
+	private static readonly delta: number = 0x61C88647;
 
-	constructor(key: Uint32Array) {
+	private key: Uint32Array;
+
+	public constructor(key: Uint32Array) {
 		this.key = new Uint32Array(key);
 	}
 
-	encrypt(msg: NetworkMessage) {
+	public encrypt(msg: NetworkMessage) {
 		let paddingBytes: number = msg.getLength() % 8;
 		if (paddingBytes > 0) {
 			msg.addPaddingBytes(8 - paddingBytes);
@@ -39,7 +40,7 @@ export class XTEA {
 		}
 	}
 
-	decrypt(msg: NetworkMessage): boolean {
+	public decrypt(msg: NetworkMessage): boolean {
 		if ((msg.getLength() & 7) != 0) {
 			return false;
 		}
@@ -66,4 +67,5 @@ export class XTEA {
 			readPos += 8;
 		}
 	}
+    
 }
