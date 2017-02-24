@@ -5,7 +5,7 @@ const config = {
 		motd: "Hello from the other side. xP"
 	},
 	connection: {
-		ip: "127.0.0.1",
+		host: "127.0.0.1",
 		loginPort: 7171,
 		gamePort: 7172
 	},
