@@ -7,5 +7,5 @@ export class NetworkMessage extends Binary {
             this.addUInt8(0x33);
         }
     }
-    
+  
 }
