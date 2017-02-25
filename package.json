@@ -8,7 +8,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "start": "node ./bin/src",
-    "buildstart": "npm run build && npm start"
+    "buildstart": "npm run build && npm start",
+	"pretest": "tsc --baseUrl test",
+    "test": "mocha \"bin/test/*.js\""
   },
   "repository": {
     "type": "git",
@@ -25,9 +27,12 @@
   },
   "homepage": "https://github.com/Mkalo/typescript-otserver#readme",
   "devDependencies": {
-    "typescript": "^2.2.1"
+    "typescript": "^2.2.1",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0"
   },
   "dependencies": {
+    "@types/mocha": "^2.2.39",
     "@types/node": "^7.0.5",
     "big-integer": "^1.6.17",
     "node-rsa": "^0.4.2",
