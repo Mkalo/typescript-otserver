@@ -6,7 +6,7 @@
   "typings": "js/index",
   "scripts": {
     "build": "tsc",
-	"watch": "tsc -w",
+    "watch": "tsc -w",
     "start": "node ./bin/src",
     "buildstart": "npm run build & npm start"
   },
@@ -30,6 +30,7 @@
   "dependencies": {
     "@types/node": "^7.0.5",
     "big-integer": "^1.6.17",
-    "node-rsa": "^0.4.2"
+    "node-rsa": "^0.4.2",
+    "xml2json": "^0.11.0"
   }
 }

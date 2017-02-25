@@ -1,8 +1,10 @@
+import * as path from 'path';
 import { RSA } from './rsa';
 import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkmessage";
 import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
+import { OTBLoader } from './OTB-loader';
 
 export class Otserv {
 	config: Object;
@@ -12,6 +14,10 @@ export class Otserv {
 	}
 
 	start() {
+		const dataDir = path.join(__dirname, '..', '..', 'data');
+		/* const itemsName = path.join(dataDir, 'items');
+		const otbLoader = new OTBLoader();
+		const items = otbLoader.loadItems(itemsName); */
 
 		/*let g_rsa: RSA = RSA.getInstance();
 		let text: string = 'Hello RSA!';
