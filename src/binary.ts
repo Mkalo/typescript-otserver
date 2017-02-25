@@ -16,6 +16,18 @@ export class Binary {
 		}
     }
 
+	public setPosition(newPosition: number) {
+		this.position = newPosition;
+	}
+
+	public getPosition() {
+		return this.position;
+	}
+
+	protected setBuffer(buffer: Buffer) {
+		this.dataBuffer = buffer;
+	}
+
     public getLength(): number {
         return this.position;
     }
