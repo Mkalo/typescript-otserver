@@ -4,18 +4,22 @@ import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkmessage";
 import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
+import { ItemType } from "./items";
+import { Items } from "./items";
+import { ConfigManager } from "./configmanager";
 import { OTBLoader } from './OTB-loader';
 import { OTBMLoader } from './OTBM-loader';
 
+export const g_configmanager: ConfigManager = new ConfigManager();
+export const g_rsa: RSA = RSA.getInstance();
+    
 export class Otserv {
-	config: Object;
-
-	constructor(config: Object) {
-		this.config = config;
-	}
-
-	start() {
-		const dataDir = path.join(__dirname, '..', '..', 'data');
+    
+	public start() {
+        if (!g_configmanager.load()) throw Error("Unable to load config.js. Did you copy `config.js.sample` to `config.js`?");
+    
+    
+    const dataDir = path.join(__dirname, '..', '..', 'data');
 
 		console.log("Loading items...");
 		const itemsName = path.join(dataDir, 'items');
@@ -28,31 +32,9 @@ export class Otserv {
 		const otbmLoader = new OTBMLoader();
 		otbmLoader.load(mapName);
 
-		/*let g_rsa: RSA = RSA.getInstance();
-		let text: string = 'Hello RSA!';
-		let encrypted: string = g_rsa.getRSA().encrypt(text, 'base64');
-		console.log('encrypted: ', encrypted);
-		let decrypted: string = g_rsa.getRSA().decrypt(encrypted, 'utf8');
-		console.log('decrypted: ', decrypted);
-	
-		let msg: NetworkMessage = new NetworkMessage();
-		let xtea: XTEA = new XTEA(new Uint32Array([121324, 105464, 50055, 312015]));
-		msg.addString("Mkalo is awesome.");
-		console.log("Original: ");
-		console.log(msg.getLength());
-		for(var i = 0; i < msg.getLength(); i++) {
-		  console.log(i + ": " + msg.getOutputBuffer()[i]);
-		}
-		console.log("Encrypted: ");
-		xtea.encrypt(msg);
-		console.log(msg.getLength());
-		for(var i = 0; i < msg.getLength(); i++) {
-		  console.log(i + ": " + msg.getOutputBuffer()[i]);
-		}*/
-
-		let service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
+		const service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
 		console.log(service.is_checksummed());
-
 		console.log("Server started!");
 	}
+
 }

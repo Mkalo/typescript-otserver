@@ -1,10 +1,11 @@
 import { NumericType } from "./ctypes";
 
 export class Binary {
-    dataBuffer: Buffer;
-    position: number;
+    
+    private dataBuffer: Buffer;
+    private position: number;
 
-    constructor(data: number | Buffer) {
+    public constructor(data: number | Buffer) {
 
 		if (typeof data === "number") {
 			this.dataBuffer = Buffer.alloc(data || 24590, 0, "utf8");
@@ -15,23 +16,23 @@ export class Binary {
 		}
     }
 
-    getLength(): number {
+    public getLength(): number {
         return this.position;
     }
 
-    getOutputBuffer(): Buffer {
+    public getOutputBuffer(): Buffer {
         return this.dataBuffer;
     }
 
-	canRead(bytes: number): boolean {
+	public canRead(bytes: number): boolean {
 		return this.canAdd(bytes);
 	}
 
-    canAdd(bytes: number): boolean {
+    public canAdd(bytes: number): boolean {
         return this.position + bytes - 1 < this.dataBuffer.length;
     }
 
-	readUInt8() {
+	public readUInt8() {
 		if (!this.canRead(1)) throw Error("You are trying to read out of the buffer.");
 
 		const val = this.dataBuffer.readUInt8(this.position);
@@ -39,7 +40,7 @@ export class Binary {
 		return val;
 	}
 
-	readUInt16() {
+	public readUInt16() {
 		if (!this.canRead(2)) throw Error("You are trying to read out of the buffer.");
 
 		const val = this.dataBuffer.readUInt16LE(this.position);
@@ -47,7 +48,7 @@ export class Binary {
 		return val;
 	}
 
-	readUInt32() {
+	public readUInt32() {
 		if (!this.canRead(4)) throw Error("You are trying to read out of the buffer.");
 
 		const val = this.dataBuffer.readUInt32LE(this.position);
@@ -55,7 +56,7 @@ export class Binary {
 		return val;
 	}
 
-	readInt8() {	
+	public readInt8() {	
 		if (!this.canRead(1)) throw Error("You are trying to read out of the buffer.");
 
 		const val = this.dataBuffer.readInt8(this.position);
@@ -63,7 +64,7 @@ export class Binary {
 		return val;
 	}
 
-	readInt16() {
+	public readInt16() {
 		if (!this.canRead(2)) throw Error("You are trying to read out of the buffer.");
 
 		const val = this.dataBuffer.readInt16LE(this.position);
@@ -71,7 +72,7 @@ export class Binary {
 		return val;
 	}
 
-	readInt32() {
+	public readInt32() {
 		if (!this.canRead(4)) throw Error("You are trying to read out of the buffer.");
 
 		const val = this.dataBuffer.readInt32LE(this.position);
@@ -79,7 +80,7 @@ export class Binary {
 		return val;
 	}
 
-	readBytes(length: number): Buffer {
+	public readBytes(length: number): Buffer {
 		const bytes = [];
 
 		for (let i = 0; i < length; i++) {
@@ -89,7 +90,7 @@ export class Binary {
 		return new Buffer(bytes);
 	}
 
-	readString() {
+	public readString() {
 		let size: number;
 		try {
         	size = this.readUInt16();
@@ -102,9 +103,7 @@ export class Binary {
 		return bytes.toString();
     }
 
-
-
-    addUInt8(value: number) {
+    public addUInt8(value: number) {
         if (!this.canAdd(1)) {
             return;
         }
@@ -112,7 +111,7 @@ export class Binary {
         this.position = this.dataBuffer.writeUInt8(NumericType.getUInt8(value), this.position);
     }
 
-    addUInt16(value: number) {
+    public addUInt16(value: number) {
         if (!this.canAdd(2)) {
             return;
         }
@@ -120,7 +119,7 @@ export class Binary {
         this.position = this.dataBuffer.writeUInt16LE(NumericType.getUInt16(value), this.position);
     }
 
-    addUInt32(value: number) {
+    public addUInt32(value: number) {
         if (!this.canAdd(4)) {
             return;
         }
@@ -128,7 +127,7 @@ export class Binary {
         this.position = this.dataBuffer.writeUInt32LE(NumericType.getUInt32(value), this.position);
     }
 
-    addInt8(value: number) {
+    public addInt8(value: number) {
         if (!this.canAdd(1)) {
             return;
         }
@@ -136,7 +135,7 @@ export class Binary {
         this.position = this.dataBuffer.writeInt8(NumericType.getInt8(value), this.position);
     }
 
-    addInt16(value: number) {
+    public addInt16(value: number) {
         if (!this.canAdd(2)) {
             return;
         }
@@ -144,7 +143,7 @@ export class Binary {
         this.position = this.dataBuffer.writeInt16LE(NumericType.getInt16(value), this.position);
     }
 
-    addInt32(value: number) {
+    public addInt32(value: number) {
         if (!this.canAdd(4)) {
             return;
         }
@@ -152,7 +151,7 @@ export class Binary {
         this.position = this.dataBuffer.writeInt32LE(NumericType.getInt32(value), this.position);
     }
 
-    addString(value: string) {
+    public addString(value: string) {
         let size: number = value.length;
         if (!this.canAdd(size + 2) || size > 8192) {
             return;
@@ -160,12 +159,6 @@ export class Binary {
 
         this.addUInt16(size);
         this.position += this.dataBuffer.write(value, this.position, value.length);
-    }
-
-    addPaddingBytes(bytes: number) {
-        for (let i = 0; i < bytes; i++) {
-            this.addUInt8(0x33);
-        }
     }
 
 }
