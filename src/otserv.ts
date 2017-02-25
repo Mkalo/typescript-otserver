@@ -6,29 +6,25 @@ import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
 import { ItemType } from "./items";
 import { Items } from "./items";
-import { ConfigManager } from "./configmanager";
+import { Config } from "./config";
 import { OTBLoader } from './OTB-loader';
 import { OTBMLoader } from './OTBM-loader';
 
-export const g_configmanager: ConfigManager = new ConfigManager();
+export const g_config: Config = new Config();
 export const g_rsa: RSA = RSA.getInstance();
+const dataDirectory = path.join(__dirname, '..', '..', 'data');
     
 export class Otserv {
     
 	public start() {
-        if (!g_configmanager.load()) throw Error("Unable to load config.js. Did you copy `config.js.sample` to `config.js`?");
-    
-    
-    const dataDir = path.join(__dirname, '..', '..', 'data');
-
 		console.log("Loading items...");
-		const itemsName = path.join(dataDir, 'items');
+		const itemsName = path.join(dataDirectory, g_config.world.itemsFileName);
 		const otbLoader = new OTBLoader();
 		const items = otbLoader.loadItems(itemsName);
 
 
 		console.log("Loading map...");
-		const mapName = path.join(dataDir, 'map');
+		const mapName = path.join(dataDirectory, g_config.world.mapFileName);
 		const otbmLoader = new OTBMLoader();
 		otbmLoader.load(mapName);
 

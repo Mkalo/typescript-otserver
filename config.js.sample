@@ -1,5 +1,7 @@
 const config = {
 	world: {
+		mapFileName: 'map', // without '.otbm'
+		itemsFileName: 'items', // without '.otb'
 		type: "pvp", // "pvp", "no-pvp" and "pvp-enforced"
 		name: "Typescripten",
 		motd: "Hello from the other side. xP"
