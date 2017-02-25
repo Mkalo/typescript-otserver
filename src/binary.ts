@@ -1,11 +1,14 @@
 import { NumericType } from "./ctypes";
 
-export class Binary {
-    
-    private dataBuffer: Buffer;
-    private position: number;
+const ON_READ_OUT_OF_THE_BUFFER = "You are trying to read out of the buffer.";
+const ON_WRITE_OUT_OF_THE_BUFFER = "You are trying to write out of the buffer.";
 
-    public constructor(data: number | Buffer) {
+export class Binary {
+
+	private dataBuffer: Buffer;
+	private position: number;
+
+	public constructor(data: number | Buffer) {
 
 		if (typeof data === "number") {
 			this.dataBuffer = Buffer.alloc(data, 0, "utf8");
@@ -14,7 +17,7 @@ export class Binary {
 			this.dataBuffer = data;
 			this.position = 0;
 		}
-    }
+	}
 
 	public setPosition(newPosition: number) {
 		this.position = newPosition;
@@ -28,24 +31,40 @@ export class Binary {
 		this.dataBuffer = buffer;
 	}
 
-    public getLength(): number {
-        return this.dataBuffer.length;
-    }
+	public getLength(): number {
+		return this.dataBuffer.length;
+	}
 
-    public getBuffer(): Buffer {
-        return this.dataBuffer;
-    }
+	public getBuffer(): Buffer {
+		return this.dataBuffer;
+	}
 
 	public canRead(bytes: number): boolean {
 		return this.canAdd(bytes);
 	}
 
-    public canAdd(bytes: number): boolean {
-        return this.position + bytes - 1 < this.dataBuffer.length;
-    }
+	public canAdd(bytes: number): boolean {
+		return this.position + bytes - 1 < this.dataBuffer.length;
+	}
+
+	public readByte() {
+		if (!this.canRead(1)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
+
+		const val = this.dataBuffer.readUInt8(this.position);
+		this.position += 1;
+		return val;
+	}
+
+	public readBoolean() {
+		if (!this.canRead(1)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
+
+		const val = this.dataBuffer.readUInt8(this.position);
+		this.position += 1;
+		return !!val;
+	}
 
 	public readUInt8() {
-		if (!this.canRead(1)) throw Error("You are trying to read out of the buffer.");
+		if (!this.canRead(1)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
 
 		const val = this.dataBuffer.readUInt8(this.position);
 		this.position += 1;
@@ -53,7 +72,7 @@ export class Binary {
 	}
 
 	public readUInt16() {
-		if (!this.canRead(2)) throw Error("You are trying to read out of the buffer.");
+		if (!this.canRead(2)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
 
 		const val = this.dataBuffer.readUInt16LE(this.position);
 		this.position += 2;
@@ -61,15 +80,15 @@ export class Binary {
 	}
 
 	public readUInt32() {
-		if (!this.canRead(4)) throw Error("You are trying to read out of the buffer.");
+		if (!this.canRead(4)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
 
 		const val = this.dataBuffer.readUInt32LE(this.position);
 		this.position += 4;
 		return val;
 	}
 
-	public readInt8() {	
-		if (!this.canRead(1)) throw Error("You are trying to read out of the buffer.");
+	public readInt8() {
+		if (!this.canRead(1)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
 
 		const val = this.dataBuffer.readInt8(this.position);
 		this.position += 1;
@@ -77,7 +96,7 @@ export class Binary {
 	}
 
 	public readInt16() {
-		if (!this.canRead(2)) throw Error("You are trying to read out of the buffer.");
+		if (!this.canRead(2)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
 
 		const val = this.dataBuffer.readInt16LE(this.position);
 		this.position += 2;
@@ -85,11 +104,19 @@ export class Binary {
 	}
 
 	public readInt32() {
-		if (!this.canRead(4)) throw Error("You are trying to read out of the buffer.");
+		if (!this.canRead(4)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
 
 		const val = this.dataBuffer.readInt32LE(this.position);
 		this.position += 4;
 		return val;
+	}
+
+	public readDouble() {
+		if (!this.canRead(5)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
+
+		const precision = this.readInt8();
+		const v = this.readUInt32();
+		return (v / (10 ^ precision));
 	}
 
 	public readBytes(length: number): Buffer {
@@ -105,72 +132,86 @@ export class Binary {
 	public readString() {
 		let size: number;
 		try {
-        	size = this.readUInt16();
+			size = this.readUInt16();
 		} catch (e) {
-			throw Error("You are trying to read out of the buffer.");
+			throw Error(ON_READ_OUT_OF_THE_BUFFER);
 		}
 
-        if (!this.canRead(size)) throw Error("You are trying to read out of the buffer.");
+		if (!this.canRead(size)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
 		const bytes = this.readBytes(size);
 		return bytes.toString();
-    }
+	}
 
-    public addUInt8(value: number) {
-        if (!this.canAdd(1)) {
-            return;
-        }
+	public addByte(value: number) {
+		if (!this.canAdd(1)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 
-        this.position = this.dataBuffer.writeUInt8(NumericType.getUInt8(value), this.position);
-    }
+		this.position = this.dataBuffer.writeUInt8(NumericType.getUInt8(value), this.position);
+	}
 
-    public addUInt16(value: number) {
-        if (!this.canAdd(2)) {
-            return;
-        }
+	public addBoolean(value: boolean) {
+		if (!this.canAdd(1)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 
-        this.position = this.dataBuffer.writeUInt16LE(NumericType.getUInt16(value), this.position);
-    }
+		const val: number = value ? 1 : 0;
 
-    public addUInt32(value: number) {
-        if (!this.canAdd(4)) {
-            return;
-        }
+		this.position = this.dataBuffer.writeUInt8(NumericType.getUInt8(val), this.position);
+	}
 
-        this.position = this.dataBuffer.writeUInt32LE(NumericType.getUInt32(value), this.position);
-    }
+	public addUInt8(value: number) {
+		if (!this.canAdd(1)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 
-    public addInt8(value: number) {
-        if (!this.canAdd(1)) {
-            return;
-        }
+		this.position = this.dataBuffer.writeUInt8(NumericType.getUInt8(value), this.position);
+	}
 
-        this.position = this.dataBuffer.writeInt8(NumericType.getInt8(value), this.position);
-    }
+	public addUInt16(value: number) {
+		if (!this.canAdd(2)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 
-    public addInt16(value: number) {
-        if (!this.canAdd(2)) {
-            return;
-        }
+		this.position = this.dataBuffer.writeUInt16LE(NumericType.getUInt16(value), this.position);
+	}
 
-        this.position = this.dataBuffer.writeInt16LE(NumericType.getInt16(value), this.position);
-    }
+	public addUInt32(value: number) {
+		if (!this.canAdd(4)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 
-    public addInt32(value: number) {
-        if (!this.canAdd(4)) {
-            return;
-        }
+		this.position = this.dataBuffer.writeUInt32LE(NumericType.getUInt32(value), this.position);
+	}
 
-        this.position = this.dataBuffer.writeInt32LE(NumericType.getInt32(value), this.position);
-    }
+	public addInt8(value: number) {
+		if (!this.canAdd(1)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 
-    public addString(value: string) {
-        let size: number = value.length;
-        if (!this.canAdd(size + 2) || size > 8192) {
-            return;
-        }
+		this.position = this.dataBuffer.writeInt8(NumericType.getInt8(value), this.position);
+	}
 
-        this.addUInt16(size);
-        this.position += this.dataBuffer.write(value, this.position, value.length);
-    }
+	public addInt16(value: number) {
+		if (!this.canAdd(2)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 
+		this.position = this.dataBuffer.writeInt16LE(NumericType.getInt16(value), this.position);
+	}
+
+	public addInt32(value: number) {
+		if (!this.canAdd(4)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
+
+		this.position = this.dataBuffer.writeInt32LE(NumericType.getInt32(value), this.position);
+	}
+
+	public addDouble(value: number, precision: number) {
+		if (!this.canAdd(5)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
+
+		this.addUInt8(precision);
+		this.addUInt32(value * (10 ^ precision));
+	}
+
+	public addBytes(bytes: Buffer) {
+		const length = bytes.length;
+		if (!this.canAdd(length)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
+
+		for (let i = 0; i < length; i++)
+			this.addByte(bytes[i]);
+	}
+
+	public addString(value: string) {
+		let size: number = value.length;
+		if (!this.canAdd(size + 2) || size > 8192) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
+
+		this.addUInt16(size);
+		this.position += this.dataBuffer.write(value, this.position, value.length);
+	}
 }
