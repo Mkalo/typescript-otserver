@@ -1,10 +1,10 @@
 import * as Enums from './enums';
 
-export class ItemInfo {
-	public serverID: number;
-	public spriteId: number = 100;
-	public weight: number = 0.0;
-	public name: string;
+export class ItemType {
+	public serverID: number = 0;
+	public clientID: number = 100;
+	public weight: number = 0;
+	public name: string = '';
 	public description: string;
 	public article: string;
 	public pluralName: string;
@@ -62,8 +62,6 @@ export class ItemInfo {
 
 	public hasExtraByte: boolean = false;
 
-	private static itemInfoDictionary: Map<number, ItemInfo> = new Map<number, ItemInfo>();
-
 	public extend(xmlItem: XMLItem) {
 		const obj = xmlItem.getObject();
 		if (obj.name)
@@ -71,15 +69,6 @@ export class ItemInfo {
 
 		// TO DO: extend main object with all xml properties
 	}
-
-	public static getSpriteId(itemId: number): number {
-		return this.getItemInfo(itemId).spriteId;
-	}
-
-	public static getItemInfo(itemId: number): ItemInfo {
-		return this.itemInfoDictionary[itemId];
-	}
-
 }
 
 export class ItemFlags {
@@ -92,16 +81,6 @@ export class ItemFlags {
 	public hasFlag(flag): boolean {
 		return (this.value & flag) !== 0;
 	}
-};
-
-export class ItemType {
-    public id: number;
-    public name: string;
-
-    constructor(id: number, name: string) {
-        this.id = id;
-        this.name = name;
-    }
 }
 
 export class XMLItem {
@@ -125,42 +104,47 @@ export class XMLItem {
 }
 
 export class Item {
+	private itemType: ItemType;
+
+	constructor(itemType: ItemType) {
+		this.itemType = itemType;
+	}
 
 	public isGround(): boolean {
-		return true;
+		return this.itemType.group === Enums.ItemGroup.Ground;
+	}
+
+	public getName() {
+		return this.itemType.name;
 	}
 
 	public static create(idOrName: string | number): Item {
-		// to do xD
-		return null;
+		const itemType: ItemType = Items.getItemType(idOrName);
+		return new Item(itemType);
 	}
 }
 
 export class Items {
-    public idMap: Map<number, ItemType>;
-    public nameMap: Map<string, ItemType>;
+    public static idMap: Map<number, ItemType> = new Map<number, ItemType>();
+    public static nameMap: Map<string, ItemType> = new Map<string, ItemType>();
 
-    private static defaultObject: ItemType = new ItemType(0, "");
+    private static defaultObject: ItemType = new ItemType();
 
-    constructor() {
-        this.idMap = new Map<number, ItemType>();
-        this.nameMap = new Map<string, ItemType>();
-    }
-
-    addItem(itemType: ItemType) {
-        const itemId = itemType.id;
+    public static addItemType(itemType: ItemType) {
+        const itemId = itemType.serverID;
         const itemName = itemType.name;
 
-        this.idMap.set(itemId, itemType);
-        this.nameMap.set(itemName, itemType);
+        Items.idMap.set(itemId, itemType);
+        Items.nameMap.set(itemName, itemType);
     }
 
-    getItem(idOrName: string | number): ItemType {
-        let lookMap: Map<string | number, ItemType>;
-        if (typeof idOrName == "number") {
-            lookMap = this.idMap;
+    public static getItemType(idOrName: string | number): ItemType {
+        idOrName = Number(idOrName) || idOrName; // because "3031" and 3031 are different indexes for Map
+		let lookMap: Map<string | number, ItemType>;
+        if (typeof idOrName === "number") {
+            lookMap = Items.idMap;
         } else {
-            lookMap = this.nameMap;
+            lookMap = Items.nameMap;
         }
 
         const ret: ItemType = lookMap.get(idOrName);

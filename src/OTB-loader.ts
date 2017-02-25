@@ -1,19 +1,19 @@
 import * as fs from 'fs';
 import * as xmlParser from 'xml2json';
 import { FileLoader, Node, PropertyReader } from './file-loader';
-import { ItemInfo, ItemFlags, XMLItem } from './item';
+import { ItemType, ItemFlags, XMLItem, Items } from './item';
 import { ItemFlag } from './enums';
 
 export class OTBLoader {
 	private fileLoader: FileLoader;
-	private itemsByServerID: Map<number, ItemInfo>;
+	private itemsByServerID: Map<number, ItemType>;
 
 	public majorVersion: number;
 	public minorVersion: number;
 	public buildNumber: number;
 
 	constructor() {
-		this.itemsByServerID = new Map<number, ItemInfo>();
+		this.itemsByServerID = new Map<number, ItemType>();
 	}
 
 	private loadOTB(fileName: string): boolean {
@@ -44,7 +44,7 @@ export class OTBLoader {
 				return false;
 
 			const flags = new ItemFlags(props.readUInt32());
-			const item: ItemInfo = new ItemInfo();
+			const item: ItemType = new ItemType();
 
 			item.group = node.type;
 			item.isBlocking = flags.hasFlag(ItemFlag.BlocksSolid);
@@ -74,7 +74,7 @@ export class OTBLoader {
 						item.serverID = props.readUInt16();
 						break;
 					} case 17: {
-						item.spriteId = props.readUInt16();
+						item.clientID = props.readUInt16();
 						break;
 					} case 20: {
 						item.speed = props.readUInt16();
@@ -108,7 +108,7 @@ export class OTBLoader {
 			const xmlItem = new XMLItem(items[i]);
 
 			if (xmlItem.isValid()) {
-				const item: ItemInfo = this.itemsByServerID.get(xmlItem.getServerID());
+				const item: ItemType = this.itemsByServerID.get(xmlItem.getServerID());
 				if (item) {
 					item.extend(xmlItem);
 				} else {
@@ -138,6 +138,9 @@ export class OTBLoader {
 		if (!this.loadXML(xmlFileName))
 			throw Error(`Couldn't load ${xmlFileName}.`);
 
+		for (let [key, itemType] of this.itemsByServerID)
+			Items.addItemType(itemType);
+		
 		return this.itemsByServerID;
 	}
 }
