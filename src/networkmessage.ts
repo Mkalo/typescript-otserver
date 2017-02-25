@@ -16,7 +16,7 @@ export class NetworkMessage extends Binary {
 	public getBuffer(): Buffer {
 		const bufferLength = this.getPosition();
 		const buffer: Buffer = new Buffer(bufferLength);
-		this.getBuffer().copy(buffer, 0, 0, bufferLength);
+		super.getBuffer().copy(buffer, 0, 0, bufferLength);
         return buffer;
     }
 
