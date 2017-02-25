@@ -69,7 +69,7 @@ export class ItemInfo {
 		if (obj.name)
 			this.name = obj.name;
 
-		// extend main object by all xml properties
+		// TO DO: extend main object with all xml properties
 	}
 
 	public static getSpriteId(itemId: number): number {
@@ -120,7 +120,7 @@ export class XMLItem {
 	}
 
 	public getServerID() {
-		return this.itemObj.id || 0;
+		return parseInt(this.itemObj.id) || 0;
 	}
 }
 
