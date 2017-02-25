@@ -40,70 +40,57 @@ export class FileLoader {
 	public parseNode(node: Node) {
 		let currentNode: Node = node;
 
-		let val;
 		while (this.binaryReader.canRead(1)) {
-			val = this.binaryReader.readUInt8();
-			
-			if (val !== -1) {
-				currentNode.type = val;
-				let setPropSize: boolean = false;
+			currentNode.type = this.binaryReader.readUInt8();;
+			let setPropSize: boolean = false;
 
-				while(this.binaryReader.canRead(1)) {
-					val = this.binaryReader.readUInt8();
+			while (this.binaryReader.canRead(1)) {
+				let val = this.binaryReader.readUInt8();
 
-					if (val === -1) { // gotta change that to check if it's possible to read more...
-						break;
-					} else if (val === NODE_START) {
-						const childNode: Node = new Node();
-						childNode.start = this.binaryReader.position;
-						setPropSize = true;
+				if (val === NODE_START) {
+					const childNode: Node = new Node();
+					childNode.start = this.binaryReader.position;
+					setPropSize = true;
+					currentNode.propSize = this.binaryReader.position - currentNode.start - 2;
+					currentNode.child = childNode;
+					if (!this.parseNode(childNode)) {
+						return false;
+					}
+				} else if (val === NODE_END) {
+					if (!setPropSize) {
 						currentNode.propSize = this.binaryReader.position - currentNode.start - 2;
-						currentNode.child = childNode;
-						if (!this.parseNode(childNode)) {
+					}
+
+					if (this.binaryReader.canRead(1)) {
+						val = this.binaryReader.readUInt8();
+						if (val === NODE_START) {
+							const nextNode: Node = new Node();
+							nextNode.start = this.binaryReader.position;
+							currentNode.next = nextNode;
+							currentNode = nextNode;
+							break;
+						} else if (val === NODE_END) {
+							this.binaryReader.position--;
+							return true;
+						} else {
+							// bad format
 							return false;
 						}
-					} else if (val === NODE_END) {
-						if (!setPropSize) {
-							currentNode.propSize = this.binaryReader.position - currentNode.start - 2;
-						}
-
-						if (this.binaryReader.canRead(1)) {
-							val = this.binaryReader.readUInt8();
-							if (val === NODE_START) {
-								const nextNode: Node = new Node();
-								nextNode.start = this.binaryReader.position;
-								currentNode.next = nextNode;
-								currentNode = nextNode;
-								break;
-							} else if (val === NODE_END) {
-								this.binaryReader.position--;
-								return true;
-							} else {
-								// bad format
-								return false;
-							}
-						} else {
-							// end of file?
-							return true;
-						}
-					} else if (val === ESCAPE) {
-						this.binaryReader.readInt8();
+					} else {
+						// end of file?
+						return true;
 					}
+				} else if (val === ESCAPE) {
+					this.binaryReader.readInt8();
 				}
 			}
-
 		}
 	}
-									// size is out &&&&
+
 	private _getProps(node: Node) {
-		const buffer = new Buffer(node.propSize)
-
+		const buffer = new Buffer(node.propSize);
 		this.binaryReader.position = node.start + 1;
-
-		// to change this...
-		for (let i = 0; i < node.propSize; i++) {
-			buffer[i] = this.binaryReader.dataBuffer[this.binaryReader.position++];
-		}
+		this.binaryReader.dataBuffer.copy(buffer, 0, this.binaryReader.position, this.binaryReader.position += node.propSize);
 
 		let j = 0;
 		let escaped = false;
@@ -128,15 +115,7 @@ export class FileLoader {
 		const buffer = _props.buffer;
 
 		const newBuffer = new Buffer(size);
-
-		for (let i = 0; i < size; i++)  {
-			newBuffer[i] = buffer[i];
-		}
-
-		if (buffer === null) {
-			props = null;
-			return false;
-		}
+		buffer.copy(newBuffer, 0, 0, size);
 
 		props.reInitalize(newBuffer);
 
