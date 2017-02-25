@@ -13,6 +13,22 @@ export class NetworkMessage extends Binary {
 		super(NETWORKMESSAGE_MAXSIZE);
 	}
 
+	public addHeader() {
+		throw Error("Not implemented.");
+	}
+
+	public addPacketSize() {
+		throw Error("Not implemented.");
+	}
+
+	public removeHeader() {
+		throw Error("Not implemented.");
+	}
+
+	public calculateAdler32Checksum() {
+		throw Error("Not implemented.");
+	}
+
 	public getBuffer(): Buffer {
 		const bufferLength = this.getPosition();
 		const buffer: Buffer = new Buffer(bufferLength);
