@@ -32,7 +32,7 @@ export class Binary {
         return this.dataBuffer.length;
     }
 
-    public getOutputBuffer(): Buffer {
+    public getBuffer(): Buffer {
         return this.dataBuffer;
     }
 

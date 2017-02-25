@@ -92,7 +92,7 @@ export class FileLoader {
 		const startPosition = this.binaryReader.getPosition();
 		this.binaryReader.setPosition(startPosition + node.propSize);
 		const endPosition = this.binaryReader.getPosition();
-		this.binaryReader.getOutputBuffer().copy(buffer, 0, startPosition, endPosition);
+		this.binaryReader.getBuffer().copy(buffer, 0, startPosition, endPosition);
 
 		let j = 0;
 		let escaped = false;

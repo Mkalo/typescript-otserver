@@ -17,7 +17,7 @@ export class XTEA {
 			msg.addPaddingBytes(8 - paddingBytes);
 		}
 
-		const buffer: Buffer = msg.getOutputBuffer();
+		const buffer: Buffer = msg.getBuffer();
 		const messageLength: number = msg.getPosition();
 		let readPos: number = 0;
 		while (readPos < messageLength) {
@@ -45,7 +45,7 @@ export class XTEA {
 			return false;
 		}
 
-		const buffer: Buffer = msg.getOutputBuffer();
+		const buffer: Buffer = msg.getBuffer();
 		const messageLength: number = msg.getPosition();
 		let readPos: number = 0;
 		while (readPos < messageLength) {
