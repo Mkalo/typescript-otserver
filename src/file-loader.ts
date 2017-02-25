@@ -1,9 +1,6 @@
 import { Binary } from './binary';
+import { NODE_START, NODE_END, ESCAPE } from './enums';
 import * as fs from 'fs';
-
-const NODE_START = 0xFE;
-const NODE_END = 0xFF;
-const ESCAPE = 0xFD;
 
 export class Node {
 	public start: number = 0;
