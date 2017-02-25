@@ -7,27 +7,31 @@ import { ProtocolLogin } from "./protocol";
 import { Config } from "./config";
 import { OTBLoader } from './OTB-loader';
 import { OTBMLoader } from './OTBM-loader';
+import { LoadingText, printInfo } from './loading-text';
 
 export const g_config: Config = new Config();
 export const g_rsa: RSA = RSA.getInstance();
 const dataDirectory = path.join(__dirname, '..', '..', 'data');
-    
+
 export class Otserv {
-    
+
 	public start() {
-		console.log("Loading items...");
+		printInfo();
+		const loadingItemsText = new LoadingText("Loading items");
 		const itemsFileName = path.join(dataDirectory, g_config.world.itemsFileName);
 		const otbLoader = new OTBLoader();
 		otbLoader.loadItems(itemsFileName);
+		loadingItemsText.stop();
 
-		console.log("Loading map...");
+		const loadingMapText = new LoadingText("Loading map");
 		const mapFileName = path.join(dataDirectory, g_config.world.mapFileName);
 		const otbmLoader = new OTBMLoader();
 		otbmLoader.load(mapFileName);
+		loadingMapText.stop();
 
 		const service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
-		console.log(service.is_checksummed());
-		console.log("Server started!");
+		// console.log(service.is_checksummed());
+		console.log("Typescripten server is online! <--- LUL");
 	}
 
 }
