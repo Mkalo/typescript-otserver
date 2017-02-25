@@ -124,6 +124,18 @@ export class XMLItem {
 	}
 }
 
+export class Item {
+
+	public isGround(): boolean {
+		return true;
+	}
+
+	public static create(idOrName: string | number): Item {
+		// to do xD
+		return null;
+	}
+}
+
 export class Items {
     public idMap: Map<number, ItemType>;
     public nameMap: Map<string, ItemType>;

@@ -5,6 +5,7 @@ import { NetworkMessage } from "./networkmessage";
 import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
 import { OTBLoader } from './OTB-loader';
+import { OTBMLoader } from './OTBM-loader';
 
 export class Otserv {
 	config: Object;
@@ -15,9 +16,17 @@ export class Otserv {
 
 	start() {
 		const dataDir = path.join(__dirname, '..', '..', 'data');
-		/* const itemsName = path.join(dataDir, 'items');
+
+		console.log("Loading items...");
+		const itemsName = path.join(dataDir, 'items');
 		const otbLoader = new OTBLoader();
-		const items = otbLoader.loadItems(itemsName); */
+		const items = otbLoader.loadItems(itemsName);
+
+
+		console.log("Loading map...");
+		const mapName = path.join(dataDir, 'map');
+		const otbmLoader = new OTBMLoader();
+		otbmLoader.load(mapName);
 
 		/*let g_rsa: RSA = RSA.getInstance();
 		let text: string = 'Hello RSA!';
