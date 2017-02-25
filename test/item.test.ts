@@ -1,6 +1,7 @@
 import { OTBLoader } from '../src/OTB-loader';
 import { Items, Item } from '../src/item';
 import * as path from 'path';
+import * as assert from 'assert';
 
 describe('Item', () => {
 
@@ -12,10 +13,10 @@ describe('Item', () => {
 
     describe('Create', () => {
         it('should return valid results', () => {
-			if (Item.create(407).isGround() !== true) throw Error('Item with id 407 is a ground.');
-			if (Item.create("2148").isGround() !== false) throw Error('Item with id 2148 is not a ground.');
-			if (Item.create("black marble floor").isGround() !== true) throw Error('"black marble floor" is a ground.');
-			if (Item.create("2148").getName() !== "gold coin") throw Error('Item with id 2148 is named "gold coin"');
+			assert(Item.create(407).isGround(), 'Item with id 407 is a ground.');
+			assert(!Item.create("2148").isGround(), 'Item with id 2148 is not a ground.');
+			assert(Item.create("black marble floor").isGround(), '"black marble floor" is a ground.');
+			assert(Item.create("2148").getName() === "gold coin", 'Item with id 2148 is named "gold coin"');
         });
     });
 });

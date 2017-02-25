@@ -1,5 +1,6 @@
 import { XTEA } from '../src/xtea';
 import { NetworkMessage } from '../src/networkmessage';
+import * as assert from 'assert';
 
 describe('XTEA', () => {
     it('encrypt and decrypt', () => {
@@ -8,8 +9,8 @@ describe('XTEA', () => {
 		const str = "Mkalo is awesome.";
 		msg.addString(str);
 		xtea.encrypt(msg);
-		// xtea.decrypt(msg);
-		// msg.setPosition(0);
-		// // if (msg.readString() !== str) throw Error('String before and after encryption is not the same.');
+		xtea.decrypt(msg);
+		msg.setPosition(0);
+		assert(msg.readString() === str, 'String before and after encryption is not the same.');
     });
 });

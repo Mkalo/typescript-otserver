@@ -1,5 +1,6 @@
 import { RSA } from '../src/rsa';
 import { NetworkMessage } from '../src/networkmessage';
+import * as assert from 'assert';
 
 describe('RSA', () => {
 		const rsaInstance: RSA = RSA.getInstance();
@@ -16,8 +17,8 @@ describe('RSA', () => {
 		const decrypted: string = rsa.decrypt(encrypted1, 'utf8');
 		const decrypted2: string = rsa.decrypt(encrypted3, 'utf8');
 
-		if (decrypted !== text1) throw Error('String should be equal.');
-		if (decrypted2 === text1) throw Error('Strings should be different.');
-		if (encrypted1 === encrypted2) throw Error('Encrypt should always produce different encrypted string.');
+		assert(decrypted === text1, 'String should be equal.');
+		assert(decrypted2 !== text1, 'Strings should be different.');
+		assert(encrypted1 !== encrypted2, 'Encrypt should always produce different encrypted string.');
     });
 });
