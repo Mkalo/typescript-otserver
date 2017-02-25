@@ -46,28 +46,29 @@ export class FileLoader {
 
 				if (val === NODE_START) {
 					const childNode: Node = new Node();
-					childNode.start = this.binaryReader.position;
+					childNode.start = this.binaryReader.getPosition();
 					setPropSize = true;
-					currentNode.propSize = this.binaryReader.position - currentNode.start - 2;
+					currentNode.propSize = this.binaryReader.getPosition() - currentNode.start - 2;
 					currentNode.child = childNode;
 					if (!this.parseNode(childNode)) {
 						return false;
 					}
 				} else if (val === NODE_END) {
 					if (!setPropSize) {
-						currentNode.propSize = this.binaryReader.position - currentNode.start - 2;
+						currentNode.propSize = this.binaryReader.getPosition() - currentNode.start - 2;
 					}
 
 					if (this.binaryReader.canRead(1)) {
 						val = this.binaryReader.readUInt8();
 						if (val === NODE_START) {
 							const nextNode: Node = new Node();
-							nextNode.start = this.binaryReader.position;
+							nextNode.start = this.binaryReader.getPosition();
 							currentNode.next = nextNode;
 							currentNode = nextNode;
 							break;
 						} else if (val === NODE_END) {
-							this.binaryReader.position--;
+							const currentPosition = this.binaryReader.getPosition();
+							this.binaryReader.setPosition(currentPosition - 1);
 							return true;
 						} else {
 							// bad format
@@ -86,8 +87,12 @@ export class FileLoader {
 
 	private _getProps(node: Node) {
 		const buffer = new Buffer(node.propSize);
-		this.binaryReader.position = node.start + 1;
-		this.binaryReader.dataBuffer.copy(buffer, 0, this.binaryReader.position, this.binaryReader.position += node.propSize);
+		this.binaryReader.setPosition(node.start + 1);
+
+		const startPosition = this.binaryReader.getPosition();
+		this.binaryReader.setPosition(startPosition + node.propSize);
+		const endPosition = this.binaryReader.getPosition();
+		this.binaryReader.getOutputBuffer().copy(buffer, 0, startPosition, endPosition);
 
 		let j = 0;
 		let escaped = false;
@@ -122,7 +127,7 @@ export class FileLoader {
 
 export class PropertyReader extends Binary {
 	public reInitalize(buffer: Buffer) {
-		this.position = 0;
-		this.dataBuffer = buffer;
+		this.setPosition(0);
+		this.setBuffer(buffer);
 	}
 }
