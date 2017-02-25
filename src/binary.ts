@@ -8,7 +8,7 @@ export class Binary {
     public constructor(data: number | Buffer) {
 
 		if (typeof data === "number") {
-			this.dataBuffer = Buffer.alloc(data || 24590, 0, "utf8");
+			this.dataBuffer = Buffer.alloc(data, 0, "utf8");
 			this.position = 0;
 		} else if (Buffer.isBuffer(data)) {
 			this.dataBuffer = data;
