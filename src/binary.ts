@@ -29,7 +29,7 @@ export class Binary {
 	}
 
     public getLength(): number {
-        return this.position;
+        return this.dataBuffer.length;
     }
 
     public getOutputBuffer(): Buffer {
