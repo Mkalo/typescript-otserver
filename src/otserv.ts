@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { RSA } from './rsa';
 import { XTEA } from "./xtea";
-import { NetworkMessage } from "./networkmessage";
+import { NetworkMessage } from "./networkMessage";
 import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
 import { Config } from "./config";
