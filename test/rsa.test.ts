@@ -1,5 +1,5 @@
 import { RSA } from '../src/rsa';
-import { NetworkMessage } from '../src/networkmessage';
+import { NetworkMessage } from '../src/networkMessage';
 import * as assert from 'assert';
 
 describe('RSA', () => {

@@ -1,5 +1,5 @@
 import { Binary } from './binary';
-import { NODE_START, NODE_END, ESCAPE } from './enums';
+import { NodeType } from './enums';
 import * as fs from 'fs';
 
 export class Node {
@@ -28,7 +28,7 @@ export class FileLoader {
 		this.root = new Node();
 		this.root.start = 4;
 
-		if (this.binaryReader.readUInt8() === NODE_START)
+		if (this.binaryReader.readUInt8() === NodeType.Start)
 			return this.parseNode(this.root);
 
 		return false;
@@ -44,7 +44,7 @@ export class FileLoader {
 			while (this.binaryReader.canRead(1)) {
 				let val = this.binaryReader.readUInt8();
 
-				if (val === NODE_START) {
+				if (val === NodeType.Start) {
 					const childNode: Node = new Node();
 					childNode.start = this.binaryReader.getPosition();
 					setPropSize = true;
@@ -53,20 +53,20 @@ export class FileLoader {
 					if (!this.parseNode(childNode)) {
 						return false;
 					}
-				} else if (val === NODE_END) {
+				} else if (val === NodeType.End) {
 					if (!setPropSize) {
 						currentNode.propSize = this.binaryReader.getPosition() - currentNode.start - 2;
 					}
 
 					if (this.binaryReader.canRead(1)) {
 						val = this.binaryReader.readUInt8();
-						if (val === NODE_START) {
+						if (val === NodeType.Start) {
 							const nextNode: Node = new Node();
 							nextNode.start = this.binaryReader.getPosition();
 							currentNode.next = nextNode;
 							currentNode = nextNode;
 							break;
-						} else if (val === NODE_END) {
+						} else if (val === NodeType.End) {
 							const currentPosition = this.binaryReader.getPosition();
 							this.binaryReader.setPosition(currentPosition - 1);
 							return true;
@@ -78,7 +78,7 @@ export class FileLoader {
 						// end of file?
 						return true;
 					}
-				} else if (val === ESCAPE) {
+				} else if (val === NodeType.Escape) {
 					this.binaryReader.readInt8();
 				}
 			}
@@ -98,7 +98,7 @@ export class FileLoader {
 		let escaped = false;
 
 		for (let i = 0; i < node.propSize; ++i, ++j) {
-			if (buffer[i] === ESCAPE) {
+			if (buffer[i] === NodeType.Escape) {
 				++i;
 				buffer[j] = buffer[i];
 				escaped = true;

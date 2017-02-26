@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as xmlParser from 'xml2json';
-import { FileLoader, Node, PropertyReader } from './file-loader';
+import { FileLoader, Node, PropertyReader } from './fileLoader';
 import { ItemType, ItemFlags, XMLItem, Items } from './item';
 import { ItemFlag } from './enums';
 

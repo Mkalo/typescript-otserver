@@ -5,9 +5,9 @@ import { NetworkMessage } from "./networkmessage";
 import { Service } from "./server";
 import { ProtocolLogin } from "./protocol";
 import { Config } from "./config";
-import { OTBLoader } from './OTB-loader';
-import { OTBMLoader } from './OTBM-loader';
-import { LoadingText, printInfo } from './loading-text';
+import { OTBLoader } from './OTBLoader';
+import { OTBMLoader } from './OTBMLoader';
+import { LoadingText, printInfo } from './loadingText';
 
 export const g_config: Config = new Config();
 export const g_rsa: RSA = RSA.getInstance();
