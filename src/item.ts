@@ -1,6 +1,7 @@
 import * as Enums from './enums';
 
 export class ItemType {
+
 	public serverID: number = 0;
 	public clientID: number = 100;
 	public weight: number = 0;
@@ -59,10 +60,9 @@ export class ItemType {
 	public isWriteable: boolean = false;
 	public hasClientCharges: boolean = false;
 	public canLookThrough: boolean = false;
-
 	public hasExtraByte: boolean = false;
 
-	public extend(xmlItem: XMLItem) {
+	public extend(xmlItem: XMLItem): void {
 		const obj = xmlItem.getObject();
 		if (obj.name)
 			this.name = obj.name;
@@ -72,7 +72,8 @@ export class ItemType {
 }
 
 export class ItemFlags {
-	private value: number;
+
+	private value: number = 0;
 
 	constructor(value: number) {
 		this.value = value;
@@ -81,29 +82,32 @@ export class ItemFlags {
 	public hasFlag(flag): boolean {
 		return (this.value & flag) !== 0;
 	}
+
 }
 
 export class XMLItem {
+
 	private itemObj: any;
 	
 	constructor(item: any) {
 		this.itemObj = item || {};
 	}
 
-	public isValid() {
+	public isValid(): boolean {
 		return !!this.getServerID();
 	}
 
-	public getObject() {
+	public getObject(): any {
 		return this.itemObj;
 	}
 
-	public getServerID() {
+	public getServerID(): number {
 		return parseInt(this.itemObj.id) || 0;
 	}
 }
 
 export class Item {
+
 	private itemType: ItemType;
 
 	constructor(itemType: ItemType) {
@@ -114,7 +118,7 @@ export class Item {
 		return this.itemType.group === Enums.ItemGroup.Ground;
 	}
 
-	public getName() {
+	public getName(): string {
 		return this.itemType.name;
 	}
 
@@ -122,15 +126,17 @@ export class Item {
 		const itemType: ItemType = Items.getItemType(idOrName);
 		return new Item(itemType);
 	}
+
 }
 
 export class Items {
+
     public static idMap: Map<number, ItemType> = new Map<number, ItemType>();
     public static nameMap: Map<string, ItemType> = new Map<string, ItemType>();
 
     private static defaultObject: ItemType = new ItemType();
 
-    public static addItemType(itemType: ItemType) {
+    public static addItemType(itemType: ItemType): void {
         const itemId = itemType.serverID;
         const itemName = itemType.name;
 
@@ -154,4 +160,5 @@ export class Items {
 
         return Items.defaultObject;
     }
+
 }

@@ -9,7 +9,7 @@ export class Service<ProtocolType extends Protocol> {
 		this.protocolType = ProtocolType;
 	}
 
-	public is_checksummed(): boolean {
+	public isChecksummed(): boolean {
 		return this.protocolType.useChecksum;
 	}
 

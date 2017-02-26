@@ -11,6 +11,7 @@ export class Node {
 }
 
 export class FileLoader {
+
 	private root: Node;
 	private fileContent: Buffer;
 	private binaryReader: Binary;
@@ -19,7 +20,7 @@ export class FileLoader {
 		return this.root;
 	}
 
-	public openFile(fileName: string) {
+	public openFile(fileName: string): boolean {
 		this.fileContent = fs.readFileSync(fileName);
 		this.binaryReader = new Binary(this.fileContent);
 
@@ -34,7 +35,7 @@ export class FileLoader {
 		return false;
 	}
 
-	public parseNode(node: Node) {
+	public parseNode(node: Node): boolean {
 		let currentNode: Node = node;
 
 		while (this.binaryReader.canRead(1)) {
@@ -85,7 +86,7 @@ export class FileLoader {
 		}
 	}
 
-	private _getProps(node: Node) {
+	private _getProps(node: Node): { buffer: Buffer, size: number } {
 		const buffer = new Buffer(node.propSize);
 		this.binaryReader.setPosition(node.start + 1);
 
@@ -123,11 +124,14 @@ export class FileLoader {
 
 		return true;
 	}
+
 }
 
 export class PropertyReader extends Binary {
+
 	public reInitalize(buffer: Buffer) {
 		this.setPosition(0);
 		this.setBuffer(buffer);
 	}
+	
 }

@@ -5,12 +5,13 @@ import { ItemType, ItemFlags, XMLItem, Items } from './item';
 import { ItemFlag } from './enums';
 
 export class OTBLoader {
-	private fileLoader: FileLoader;
-	private itemsByServerID: Map<number, ItemType>;
 
 	public majorVersion: number;
 	public minorVersion: number;
 	public buildNumber: number;
+
+	private fileLoader: FileLoader;
+	private itemsByServerID: Map<number, ItemType>;
 
 	constructor() {
 		this.itemsByServerID = new Map<number, ItemType>();
@@ -122,7 +123,7 @@ export class OTBLoader {
 		return true;
 	}
 
-	public loadItems(directory: string) {
+	public loadItems(directory: string): boolean {
 		const otbFileName = directory + '.otb';
 		const xmlFileName = directory + '.xml';
 
@@ -140,7 +141,7 @@ export class OTBLoader {
 
 		for (let [key, itemType] of this.itemsByServerID)
 			Items.addItemType(itemType);
-		
-		return this.itemsByServerID;
+
+		return true;
 	}
 }

@@ -11,7 +11,7 @@ export class XTEA {
 		this.key = new Uint32Array(key);
 	}
 
-	public encrypt(msg: NetworkMessage) {
+	public encrypt(msg: NetworkMessage): void {
 		const paddingBytes: number = msg.getPosition() % 8;
 		if (paddingBytes > 0) {
 			msg.addPaddingBytes(8 - paddingBytes);

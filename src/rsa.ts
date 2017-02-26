@@ -20,7 +20,7 @@ export class RSA {
 		this.setRSA(RSA.defaultp, RSA.defaultq);
 	}
 
-	public setRSA(p: string, q: string) {
+	public setRSA(p: string, q: string): void {
 		this.p = BigInteger(p);
 		this.q = BigInteger(q);
 		this.n = BigInteger(this.p.multiply(this.q).toString());

@@ -10,6 +10,7 @@ export const printInfo = () => {
 };
 
 export class LoadingText {
+
 	private static P = ["   ", ".  ", ".. ", "..."];
 	private static frameTick: number = 100;
 	private interval: NodeJS.Timer;
@@ -25,13 +26,14 @@ export class LoadingText {
 		this.onTick();
 	}
 
-	private onTick() {
+	private onTick(): void {
 		process.stdout.write("\r" + this.text + LoadingText.P[this.x++]);
 		this.x &= 3;
 	}
 
-	public stop() {
+	public stop(): void {
 		console.log("\n" + this.text + " took " + (new Date().getTime() - this.start) + "ms.");
 		clearInterval(this.interval);
 	}
+	
 }

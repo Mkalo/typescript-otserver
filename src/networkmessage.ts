@@ -4,13 +4,16 @@ export const NETWORKMESSAGE_MAXSIZE = 24590;
 
 export class NetworkMessage extends Binary {
 
-	constructor(bufferOrLength?: Buffer | number) {
-		if (typeof bufferOrLength !== "undefined") {
-			super(bufferOrLength);
+	constructor(noArg?: any);
+	constructor(buffer: Buffer);
+	constructor(bufferLength: number);
+	constructor(p1: any) {
+		if (p1 === undefined) {
+			super(NETWORKMESSAGE_MAXSIZE);
 			return;
 		}
 
-		super(NETWORKMESSAGE_MAXSIZE);
+		super(p1);
 	}
 
 	public addHeader() {

@@ -7,8 +7,8 @@ import { WorldMap, Town, Tile } from './worldMap';
 import { Position } from './position';
 
 export class OTBMLoader {
-	private map: WorldMap;
 
+	private map: WorldMap;
 	private filesDirectory: string;
 	private houseFile: string;
 	private spawnFile: string;
@@ -44,7 +44,7 @@ export class OTBMLoader {
 		return true;
 	}
 
-	private loadOTBM(fileName: string) {
+	private loadOTBM(fileName: string): boolean {
 		const fileLoader = new FileLoader();
 		fileLoader.openFile(fileName); // add file exists check
 
@@ -122,15 +122,12 @@ export class OTBMLoader {
 			if (nodeTile.type === OtbmNodeType.Tile || nodeTile.type === OtbmNodeType.HouseTile) {
 				fileLoader.getProps(nodeTile, props);
 
-
 				const tile: Tile = new Tile();
-				tile.x = baseX + props.readUInt8();
-				tile.y = baseY + props.readUInt8();
-				tile.z = baseZ;
+				const tilePosition: Position = new Position(baseX + props.readUInt8(), baseY + props.readUInt8(), baseZ);
+				tile.setPosition(tilePosition);
 
-				if (nodeTile.type === OtbmNodeType.HouseTile) {
+				if (nodeTile.type === OtbmNodeType.HouseTile)
 					tile.houseID = props.readUInt32();
-				}
 
 				while (props.canRead(1)) {
 					const attribute = props.readUInt8();
