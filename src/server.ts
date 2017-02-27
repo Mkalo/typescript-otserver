@@ -4,19 +4,21 @@ import { Protocol } from "./protocol";
 import { NetworkMessage } from "./networkmessage"
 
 abstract class ServiceBase {
+
     public abstract isSingleSocket(): boolean;
     public abstract isChecksummed(): boolean;
     public abstract getProtocolIdentifier(): number;
     public abstract getProtocolName(): string;
 
     public abstract makeProtocol(connection: Connection): Protocol;
+
 }
 
 export class Service<ProtocolType extends Protocol> extends ServiceBase {
     
 	private protocolType: any;
 
-	public constructor(protocolType: typeof Protocol) {
+	constructor(protocolType: typeof Protocol) {
         super();
 		this.protocolType = protocolType;
 	}
@@ -44,13 +46,14 @@ export class Service<ProtocolType extends Protocol> extends ServiceBase {
 }
 
 export class ServicePort {
-    private services: Array<ServiceBase>;
+	
+    private services: ServiceBase[];
     protected ioserver: Server;
     private portOpen: boolean = false;
     private servicePort: number;
 
-    public constructor() {
-        this.services = new Array<ServiceBase>();
+    constructor() {
+        this.services = [];
     }
 
     public open(port: number): void {
@@ -61,14 +64,14 @@ export class ServicePort {
     }
 
     public run(): void {
-        if (this.ioserver !== undefined) { 
+        if (!this.ioserver) { 
             this.ioserver.listen(this.servicePort);
             this.accept();
         }
     }
 
     protected accept(): void {
-        if (this.ioserver === undefined) {
+        if (!this.ioserver) {
             return;
         }
 
@@ -85,24 +88,22 @@ export class ServicePort {
     }
 
     public close(): void {
-        if (this.portOpen && this.ioserver !== undefined) {
+        if (this.portOpen && this.ioserver) {
             this.ioserver.close();
         } 
     }
 
     public isSingleSocket(): boolean {
-        let singleSocket: boolean = false;
         for (const service of this.services) {
             if (service.isSingleSocket()) {
-                singleSocket = true;
-                break;
+                return true;
             }
         }
-        return singleSocket;
+        return false;
     }
 
     public getProtocolNames(): string {
-        if (this.services.length == 0) {
+        if (this.services.length === 0) {
             return "";
         }
 
@@ -124,7 +125,7 @@ export class ServicePort {
     public makeProtocol(connection: Connection, msg: NetworkMessage, checkSummed: boolean): Protocol {
         const protocolId: number = msg.readUInt8();
         for (let service of this.services) {
-            if (protocolId != service.getProtocolIdentifier()) {
+            if (protocolId !== service.getProtocolIdentifier()) {
                 continue;
             }
 
@@ -163,12 +164,12 @@ export class ServiceManager {
     }
 
     public isRunning(): boolean {
-        return this.acceptors.size != 0;
+        return this.acceptors.size > 0;
     }
 
     public addService<ProtocolType extends Protocol>(protocolType: typeof Protocol, port: number): boolean {
-        if (port == 0) {
-            console.log("ERROR: No port provide for service " + protocolType.protocolName);
+        if (port === 0) {
+            console.log("ERROR: No port provide for service " + protocolType.name);
             return false;
         }
 
@@ -176,7 +177,7 @@ export class ServiceManager {
         if (this.acceptors.has(port)) {
             servicePort = this.acceptors.get(port);
             if (servicePort.isSingleSocket() || protocolType.serverSendsFirst) {
-                console.log("ERROR: " + protocolType.protocolName + " and " + servicePort.getProtocolNames + " cannot use the same port " + port + ".");
+                console.log("ERROR: " + protocolType.name + " and " + servicePort.getProtocolNames + " cannot use the same port " + port + ".");
                 return false;
             }
         } else {

@@ -40,7 +40,6 @@ export abstract class Protocol {
         this.xteaKey = new XTEA(key);
     }
 
-
 }
 
 export class ProtocolLogin extends Protocol {
@@ -65,4 +64,5 @@ export class ProtocolLogin extends Protocol {
     public onSendMessage(): void {
 
     }
+	
 }

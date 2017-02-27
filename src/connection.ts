@@ -3,18 +3,18 @@ import { Protocol } from "./protocol";
 import { NetworkMessage } from "./networkmessage";
 import { ServicePort } from "./server";
 
-enum ConnectionState_t {
-    CONNECTION_STATE_OPEN,
-    CONNECTION_STATE_CLOSED
+enum ConnectionState {
+    Open,
+    Closed
 };
 
 export class ConnectionManager {
     
     private static instance: ConnectionManager = new ConnectionManager();
-    protected connections: Array<Connection>;
+    protected connections: Connection[];
 
     protected constructor() {
-        this.connections = new Array<Connection>();
+        this.connections = [];
     }
 
     public static getInstance(): ConnectionManager {
@@ -22,7 +22,7 @@ export class ConnectionManager {
     }
 
     public createConnection(server: Server, servicePort: ServicePort): Connection {
-        let connection: Connection = new Connection();
+        const connection: Connection = new Connection();
         this.connections.push(connection);
         return connection;
     }
@@ -34,13 +34,13 @@ export class ConnectionManager {
         }
     }
 
-    public closeAll() : void {
+    public closeAll(): void {
         // TODO
     }
 }
 
 export class Connection {
-    private connectionState: ConnectionState_t;
+    private connectionState: ConnectionState;
     private receivedFirst: boolean;
 
     private packetsSent: number;
@@ -55,7 +55,7 @@ export class Connection {
     private message: NetworkMessage;
 
     private hasValidSocket(): boolean {
-        return this.socket !== undefined;
+        return !!this.socket;
     }
     
     public setSocket(socket: Socket): void {
