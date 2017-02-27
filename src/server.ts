@@ -64,7 +64,7 @@ export class ServicePort {
     }
 
     public run(): void {
-        if (!this.ioserver) { 
+        if (this.ioserver) {
             this.ioserver.listen(this.servicePort);
             this.accept();
         }
