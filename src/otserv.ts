@@ -2,7 +2,7 @@ import * as path from 'path';
 import { RSA } from './rsa';
 import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkmessage";
-import { Service } from "./server";
+import { ServiceManager } from "./server";
 import { ProtocolLogin } from "./protocol";
 import { Config } from "./config";
 import { OTBLoader } from './OTB-loader';
@@ -25,9 +25,11 @@ export class Otserv {
 		const otbmLoader = new OTBMLoader();
 		otbmLoader.load(mapFileName);
 
-		const service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
-		console.log(service.is_checksummed());
-		console.log("Server started!");
+		const serviceManager: ServiceManager = new ServiceManager();
+        serviceManager.addService<ProtocolLogin>(ProtocolLogin, 7171);
+        serviceManager.run();
+        
+        console.log("Server started!");
 	}
 
 }
