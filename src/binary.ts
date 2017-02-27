@@ -144,7 +144,7 @@ export class Binary {
 
 	public skipBytes(value: number): void {
 		if (!this.canRead(value)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
-		const bytes = this.readBytes(value);
+		this.position += value;
 	}
 
 	public addByte(value: number) {
