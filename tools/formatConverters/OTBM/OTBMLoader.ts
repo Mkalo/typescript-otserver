@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Item } from './item';
-import { FileLoader, Node, PropertyReader } from './fileLoader';
-import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlags } from './enums';
-import { WorldMap, Town, Tile } from './worldMap';
-import { Position } from './position';
+import { Item } from '../../../src/item';
+import { FileLoader, Node, PropertyReader } from './../fileLoader';
+import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlags } from '../../../src/enums';
+import { WorldMap, Town, Tile } from '../../../src/worldMap';
+import { Position } from '../../../src/position';
 
 export class OTBMLoader {
 

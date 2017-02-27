@@ -1,4 +1,4 @@
-import { OTBLoader } from '../src/OTBLoader';
+import { OTBLoader } from '../tools/formatConverters/OTB/OTBLoader';
 import { Items, Item } from '../src/item';
 import * as path from 'path';
 import * as assert from 'assert';
