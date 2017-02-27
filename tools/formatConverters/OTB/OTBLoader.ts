@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as xmlParser from 'xml2json';
+import * as protobuf from "protobufjs";
 import { FileLoader, Node, PropertyReader } from '../fileLoader';
-import { ItemType, ItemFlags, XMLItem, Items } from 'src/item';
-import { ItemFlag } from 'src/enums';
+import { ItemType, ItemFlags, XMLItem, Items } from '../../../src/item';
+import { ItemFlag } from '../../../src/enums';
 
 export class OTBLoader {
 
@@ -11,7 +12,7 @@ export class OTBLoader {
 	public buildNumber: number;
 
 	private fileLoader: FileLoader;
-	private itemsByServerID: Map<number, ItemType>;
+	public itemsByServerID: Map<number, ItemType>;
 
 	constructor() {
 		this.itemsByServerID = new Map<number, ItemType>();
@@ -139,8 +140,8 @@ export class OTBLoader {
 		if (!this.loadXML(xmlFileName))
 			throw Error(`Couldn't load ${xmlFileName}.`);
 
-		for (let [key, itemType] of this.itemsByServerID)
-			Items.addItemType(itemType);
+		// for (let [key, itemType] of this.itemsByServerID)
+		// 	Items.addItemType(itemType);
 
 		return true;
 	}
