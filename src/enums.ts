@@ -694,3 +694,13 @@ export enum ItemAttribute {
 	TopOrder,
 	Writeable3		/*deprecated*/
 };
+
+export enum GameState {
+	Startup,
+	Init,
+	Normal,
+	Closed,
+	Shutdown,
+	Closingg,
+	Maintain
+};

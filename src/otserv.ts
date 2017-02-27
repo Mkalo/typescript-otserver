@@ -15,18 +15,18 @@ const dataDirectory = path.join(__dirname, '..', '..', 'data');
 export class Otserv {
     
 	public start() {
-		console.log("Loading items...");
-		const itemsFileName = path.join(dataDirectory, g_config.world.itemsFileName);
-		const otbLoader = new OTBLoader();
-		otbLoader.loadItems(itemsFileName);
+		// console.log("Loading items...");
+		// const itemsFileName = path.join(dataDirectory, g_config.world.itemsFileName);
+		// const otbLoader = new OTBLoader();
+		// otbLoader.loadItems(itemsFileName);
 
-		console.log("Loading map...");
-		const mapFileName = path.join(dataDirectory, g_config.world.mapFileName);
-		const otbmLoader = new OTBMLoader();
-		otbmLoader.load(mapFileName);
+		// console.log("Loading map...");
+		// const mapFileName = path.join(dataDirectory, g_config.world.mapFileName);
+		// const otbmLoader = new OTBMLoader();
+		// otbmLoader.load(mapFileName);
 
         const serviceManager: ServiceManager = new ServiceManager();
-        serviceManager.addService<ProtocolLogin>(ProtocolLogin, 7171);
+        serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
         serviceManager.run();
         
         console.log("Server started!");
