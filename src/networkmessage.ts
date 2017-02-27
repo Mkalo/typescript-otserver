@@ -43,3 +43,7 @@ export class NetworkMessage extends Binary {
     }
   
 }
+
+export class OutputMessage extends NetworkMessage {
+
+}
