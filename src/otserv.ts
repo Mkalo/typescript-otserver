@@ -25,7 +25,7 @@ export class Otserv {
 		const otbmLoader = new OTBMLoader();
 		otbmLoader.load(mapFileName);
 
-		const serviceManager: ServiceManager = new ServiceManager();
+        const serviceManager: ServiceManager = new ServiceManager();
         serviceManager.addService<ProtocolLogin>(ProtocolLogin, 7171);
         serviceManager.run();
         
