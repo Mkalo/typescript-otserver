@@ -7,7 +7,8 @@
 		"outDir": "bin",
 		"rootDir": ".",
 		"sourceMap": true,
-		"allowJs": true
+		"allowJs": true,
+		"baseUrl": "."
 	},
 	"exclude": [
 		"node_modules",

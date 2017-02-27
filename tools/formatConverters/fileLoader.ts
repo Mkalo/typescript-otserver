@@ -1,5 +1,5 @@
-import { Binary } from '../../src/binary';
-import { NodeType } from '../../src/enums';
+import { Binary } from 'src/binary';
+import { NodeType } from 'src/enums';
 import * as fs from 'fs';
 
 export class Node {
