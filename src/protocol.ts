@@ -170,12 +170,15 @@ export class ProtocolLogin extends Protocol {
 		// console.log("READ POS:", msg.getPosition());
 		// console.log(msg.getBuffer().length - 128);
 
-		// if (!this.decryptRSA(msg)) {
-		// 	this.disconnectClient("Invalid authentification token.", version);
-		// 	return;
-		// }
+		let authToken = null;
+		if (!this.decryptRSA(msg)) {
+			// this.disconnectClient("Invalid authentification token.", version);
+			// return;
+			authToken = "";
+		} else {
+			authToken = msg.readString();
+		}
 
-		const authToken = '';//msg.readString();
 		this.processLogin(accountName, password, authToken, version);
 	}
 
