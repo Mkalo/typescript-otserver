@@ -83,27 +83,13 @@ export class ProtocolLogin extends Protocol {
 	}
 
 	private decryptRSA(msg: NetworkMessage): boolean {
-		const from = msg.getBuffer();
-		const bufferToDecrypt: Buffer = new Buffer(128);
+		const buffer = msg.getBuffer();
 		
-		const start = msg.getPosition();
-		const end = start + 128;
-		from.copy(bufferToDecrypt, 0, start, end);
-        let test: Buffer = g_rsa.decrypt(bufferToDecrypt);
-        console.log("Encrypted:");
-        console.log(bufferToDecrypt.toString());
-        console.log("Descrypted:");
-        console.log(test.toString());
-		try {
-			//if (!g_rsa.getRSA().decrypt(bufferToDecrypt)) {
-			//	return false;
-			//}
-		} catch (e) {
-			const err = e.stack;
+		if ((buffer.length - msg.getPosition()) < 128) { // rest of packet is to short to be RSA encrypted
 			return false;
 		}
-		// set position += 128
 
+		g_rsa.decrypt(buffer, msg.getPosition());
 
 		const rsaByte = msg.readByte();
 
@@ -120,10 +106,11 @@ export class ProtocolLogin extends Protocol {
 
 		msg.skipBytes(1); // 0 byte idk what it is
 
-
+		const before1stRSA = msg.getPosition();
 		if (!this.decryptRSA(msg)) {
 			return this.disconnect();
 		}
+
 
 		const key = new Uint32Array(4);
 		key[0] = msg.readUInt32();
@@ -177,8 +164,22 @@ export class ProtocolLogin extends Protocol {
 		}
 
 		// read authenticator token and stay logged in flag from last 128 bytes
-		msg.skipBytes((msg.getLength() - 128) - msg.getPosition());
-		if (!g_rsa.getRSA().decrypt(msg)) { // TO CHANGE
+		
+		// msg.setPosition(207);
+		// const pos = (msg.getLength() - 128) - msg.getPosition();
+		const pos2 = before1stRSA + 128;
+		msg.setPosition(pos2);
+
+		msg.readUInt8(); // wtf is this?
+		msg.readUInt8(); // wtf is this?
+
+		const hardware1 = msg.readString();
+		const hardware2 = msg.readString();
+
+		console.log("READ POS:", msg.getPosition());
+		console.log(msg.getBuffer().length - 128);
+
+		if (!this.decryptRSA(msg)) {
 			this.disconnectClient("Invalid authentification token.", version);
 			return;
 		}
@@ -251,7 +252,7 @@ export class ProtocolLogin extends Protocol {
 			output.addString(world.name);
 			output.addString(world.ip);
 			output.addUInt16(world.port);
-			output.addByte(world.isPreview || 0); 
+			output.addByte(world.isPreview || 0);
 		}
 
 		output.addByte(characters.length);
