@@ -1,8 +1,15 @@
+import { NumericType } from "./ctypes";
 import { Binary } from './binary';
 
-export const NETWORKMESSAGE_MAXSIZE = 24590;
-
 export class NetworkMessage extends Binary {
+    public static NETWORKMESSAGE_MAXSIZE: number = 24590;
+    public static INITIAL_BUFFER_POSITION: number = 8;
+    public static HEADER_LENGTH: number = 2;
+    public static CHECKSUM_LENGTH: number = 4;
+    public static XTEA_MULTIPLE: number = 8;
+    public static MAX_BODY_LENGTH = NetworkMessage.NETWORKMESSAGE_MAXSIZE - NetworkMessage.HEADER_LENGTH - NetworkMessage.CHECKSUM_LENGTH - NetworkMessage.XTEA_MULTIPLE;
+    public static MAX_PROTOCOL_BODY_LENGTH = NetworkMessage.MAX_BODY_LENGTH - 10;
+
 
 	constructor(bufferOrLength?: Buffer | number) {
 		if (typeof bufferOrLength !== "undefined") {
@@ -10,7 +17,7 @@ export class NetworkMessage extends Binary {
 			return;
 		}
 
-		super(NETWORKMESSAGE_MAXSIZE);
+		super(NetworkMessage.NETWORKMESSAGE_MAXSIZE);
 	}
 
 	public addHeader() {
@@ -25,8 +32,33 @@ export class NetworkMessage extends Binary {
 		throw Error("Not implemented.");
 	}
 
-	public calculateAdler32Checksum() {
-		throw Error("Not implemented.");
+	public calculateAdler32Checksum(length: number): number {
+		if (length > NetworkMessage.NETWORKMESSAGE_MAXSIZE || !this.canRead(length)) {
+            return 0;
+        }
+
+        const adler: number = 65521;
+        
+        let a: number = 1;
+        let b: number = 0;
+        
+        let i: number = this.getPosition();
+        const buffer: Buffer = this.getBuffer();
+
+        while (length > 0) {
+            let tmp: number = length > 5552 ? 5552 : length;
+            length -= tmp;
+
+            do {
+                a += buffer[i++] << 0;
+                b += a;
+            } while (--tmp);
+
+            a %= adler;
+            b %= adler;
+        }
+        
+        return NumericType.getUInt32((b << 16) | a);
 	}
 
 	public getBuffer(): Buffer {

@@ -83,7 +83,17 @@ export class ServicePort {
     }
 
     public onAccept(connection: Connection): void {
-        console.log(connection.getIp());
+        if (this.services.length == 0) {
+            return;
+        }
+        
+        const serviceFront: ServiceBase = this.services[0];
+        if (serviceFront.isSingleSocket()) {
+            connection.accept(serviceFront.makeProtocol(connection));
+        } else {
+            connection.accept();
+        }
+
         this.accept();
     }
 

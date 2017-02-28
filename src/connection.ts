@@ -54,6 +54,10 @@ export class Connection {
 
     private message: NetworkMessage;
 
+    constructor() {
+        this.connectionState = ConnectionState.Open;
+    }
+
     private hasValidSocket(): boolean {
         return !!this.socket;
     }
@@ -67,7 +71,63 @@ export class Connection {
     public getIp(): string {
         if (this.hasValidSocket) {
             return this.socket.address().address;
-        }
+        }   
         return "0.0.0.0";
+    }
+
+    public parsePacket(): void {
+        if (this.connectionState == ConnectionState.Closed || !this.message) {
+            return;
+        }
+
+        const size: number = this.message.readUInt16();
+        if (size == 0 || size >= NetworkMessage.NETWORKMESSAGE_MAXSIZE - 16) {
+            return;
+        }
+
+        let checksum: number = 0;
+        const length: number = size - NetworkMessage.CHECKSUM_LENGTH;
+        const recvChecksum = this.message.readUInt32();
+
+        if (length > 0) {
+	        checksum = this.message.calculateAdler32Checksum(length);
+        }
+
+        if (recvChecksum != checksum) {
+            this.message.setPosition(this.message.getPosition() - 4);
+        }
+
+        if (!this.receivedFirst) {
+            this.receivedFirst = true;
+
+            if (!this.protocol) {
+                this.protocol = this.servicePort.makeProtocol(this, this.message, checksum == recvChecksum);
+                if (!this.protocol) {
+                    // close
+                    return;
+                }
+            } else {
+                this.message.setPosition(this.message.getPosition() + 1);
+            }
+
+            this.protocol.onRecvFirstMessage(this.message);
+        } else {
+            this.protocol.onRecvMessage(this.message);
+        }
+
+        this.accept();
+    }
+
+    public accept(protocolType?: Protocol): void {
+        if (!protocolType) {
+            this.socket.once("data", (buffer) => {
+                this.message = new NetworkMessage(buffer);
+                this.parsePacket();
+            });
+        } else {
+            this.protocol = protocolType;
+            protocolType.onConnect();
+            this.accept();
+        }
     }
 }
