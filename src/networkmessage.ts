@@ -49,12 +49,12 @@ export class NetworkMessage extends Binary {
         return NumericType.getUInt32((b << 16) | a);
 	}
 
-	public getBuffer(): Buffer {
-		const bufferLength = this.getPosition();
-		const buffer: Buffer = new Buffer(bufferLength);
-		super.getBuffer().copy(buffer, 0, 0, bufferLength);
-        return buffer;
-    }
+	// public getBuffer(): Buffer {
+	// 	const bufferLength = this.getPosition();
+	// 	const buffer: Buffer = new Buffer(bufferLength);
+	// 	super.getBuffer().copy(buffer, 0, 0, bufferLength);
+    //     return buffer;
+    // }
 
     public addPaddingBytes(bytes: number) {
         for (let i = 0; i < bytes; i++) {

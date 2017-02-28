@@ -82,6 +82,20 @@ export class ProtocolLogin extends Protocol {
 
 	}
 
+	private decryptRSA(msg: NetworkMessage): boolean {
+		const buffer = msg.getBuffer();
+		
+		if ((buffer.length - msg.getPosition()) < 128) { // rest of packet is to short to be RSA encrypted
+			return false;
+		}
+
+		g_rsa.decrypt(buffer, msg.getPosition());
+
+		const rsaByte = msg.readByte();
+
+		return rsaByte === 0;
+	}
+
 	public onRecvFirstMessage(msg: NetworkMessage): void {
 		const operatingSytem = msg.readUInt16();
 		const version = msg.readUInt16();
@@ -92,10 +106,11 @@ export class ProtocolLogin extends Protocol {
 
 		msg.skipBytes(1); // 0 byte idk what it is
 
-
-		if (!g_rsa.getRSA().decrypt(msg)) {
+		const before1stRSA = msg.getPosition();
+		if (!this.decryptRSA(msg)) {
 			return this.disconnect();
 		}
+
 
 		const key = new Uint32Array(4);
 		key[0] = msg.readUInt32();
@@ -108,9 +123,9 @@ export class ProtocolLogin extends Protocol {
 		this.enableXTEAEncryption();
 		this.setXTEAKey(key);
 
-		if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
-			return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);
-		}
+		// if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
+		// 	return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);
+		// }
 
 		// if (g_game.getGameState() == GameState.Startup) {
 		// 	return this.disconnectClient("Gameworld is starting up. Please wait.", version);
@@ -149,8 +164,22 @@ export class ProtocolLogin extends Protocol {
 		}
 
 		// read authenticator token and stay logged in flag from last 128 bytes
-		msg.skipBytes((msg.getLength() - 128) - msg.getPosition());
-		if (!g_rsa.getRSA().decrypt(msg)) { // TO CHANGE
+		
+		// msg.setPosition(207);
+		// const pos = (msg.getLength() - 128) - msg.getPosition();
+		const pos2 = before1stRSA + 128;
+		msg.setPosition(pos2);
+
+		msg.readUInt8(); // wtf is this?
+		msg.readUInt8(); // wtf is this?
+
+		const hardware1 = msg.readString();
+		const hardware2 = msg.readString();
+
+		console.log("READ POS:", msg.getPosition());
+		console.log(msg.getBuffer().length - 128);
+
+		if (!this.decryptRSA(msg)) {
 			this.disconnectClient("Invalid authentification token.", version);
 			return;
 		}
@@ -223,7 +252,7 @@ export class ProtocolLogin extends Protocol {
 			output.addString(world.name);
 			output.addString(world.ip);
 			output.addUInt16(world.port);
-			output.addByte(world.isPreview || 0); 
+			output.addByte(world.isPreview || 0);
 		}
 
 		output.addByte(characters.length);
