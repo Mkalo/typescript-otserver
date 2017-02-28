@@ -24,7 +24,7 @@ class GameConfig {
 }
 
 class LoginServerConfig {
-	port: 7171
+	port: number = 7171;
 }
 
 export class Config {
@@ -48,7 +48,6 @@ export class Config {
 
 	private loadConfig() {
 		const loadedConfig = require('../config.js').default;
-
 
 		deepExtend(this.loginServer, loadedConfig.loginServer);
 		deepExtend(this.db, loadedConfig.db);
