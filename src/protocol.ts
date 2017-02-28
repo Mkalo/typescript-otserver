@@ -28,14 +28,11 @@ export abstract class Protocol {
 	}
 
 	public abstract onRecvFirstMessage(msg: NetworkMessage): void;
-	public abstract onConnect(): void;
 
+	public onConnect(): void {};
 	public parsePacket(msg: NetworkMessage): void {};
 	public onSendMessage(msg: OutputMessage): void {};
-
-	public onRecvMessage(msg: NetworkMessage): void {
-
-	}
+	public onRecvMessage(msg: NetworkMessage): void {}
 
 	public send(msg: NetworkMessage): void {
 		// TODO
@@ -74,10 +71,6 @@ export class ProtocolLogin extends Protocol {
 		this.send(output);
 
 		return this.disconnect();
-	}
-
-	public onConnect(): void {
-
 	}
 
 	private decryptRSA(msg: NetworkMessage): boolean {
