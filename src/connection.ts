@@ -1,6 +1,6 @@
 import { createServer, Server, Socket } from "net";
 import { Protocol } from "./protocol";
-import { NetworkMessage } from "./networkmessage";
+import { NetworkMessage, OutputMessage } from "./networkmessage";
 import { ServicePort } from "./server";
 
 enum ConnectionState {
@@ -51,7 +51,7 @@ export class Connection {
 
     private server: Server;
 
-    private messageQueue: Array<NetworkMessage>;
+    private messageQueue: OutputMessage[];
     private servicePort: ServicePort;
 
     private message: NetworkMessage;
@@ -132,6 +132,35 @@ export class Connection {
             this.protocol = protocolType;
             protocolType.onConnect();
             this.accept();
+        }
+    }
+
+    public send(msg: OutputMessage): void {
+        if (this.connectionState != ConnectionState.Open) {
+            return;
+        }
+
+        const noPendingWrite: boolean = this.messageQueue.length == 0;
+        this.messageQueue.push(msg);
+        if (noPendingWrite) {
+            this.internalSend(msg);
+        }
+    }
+
+    private internalSend(msg: OutputMessage): void {
+        this.protocol.onSendMessage(msg);
+        this.socket.write(msg.getBuffer(), "utf8", () => {
+            this.onWriteOperation();
+        });
+    }
+
+    private onWriteOperation(): void {
+        this.messageQueue.shift();
+        
+        if (this.messageQueue.length != 0) {
+            this.internalSend(this.messageQueue[0]);
+        } else if (this.connectionState == ConnectionState.Closed) {
+            // closeSocket();
         }
     }
 }

@@ -28,7 +28,7 @@ export abstract class Protocol {
 	}
 
 	public abstract parsePacket(msg: NetworkMessage): void;
-	public abstract onSendMessage(msg: NetworkMessage): void;
+	public abstract onSendMessage(msg: OutputMessage): void;
 	public abstract onRecvFirstMessage(msg: NetworkMessage): void;
 	public abstract onConnect(): void;
 
