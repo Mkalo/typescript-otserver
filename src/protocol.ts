@@ -36,8 +36,19 @@ export abstract class Protocol {
 
 	}
 
-	public send(msg: NetworkMessage): void {
-		// TODO
+	public send(msg: OutputMessage): void {
+		// add length
+
+		// msg.addPacketLength();
+
+		// this.xteaKey.encrypt(msg);
+		// msg.addHeader();
+		// if (this.encryptionEnabled) {
+		// 	// const encrypted
+		// }
+
+
+		return this.connection.send(msg);
 	}
 
 	protected disconnect(): void {
@@ -176,15 +187,15 @@ export class ProtocolLogin extends Protocol {
 		const hardware1 = msg.readString();
 		const hardware2 = msg.readString();
 
-		console.log("READ POS:", msg.getPosition());
-		console.log(msg.getBuffer().length - 128);
+		// console.log("READ POS:", msg.getPosition());
+		// console.log(msg.getBuffer().length - 128);
 
-		if (!this.decryptRSA(msg)) {
-			this.disconnectClient("Invalid authentification token.", version);
-			return;
-		}
+		// if (!this.decryptRSA(msg)) {
+		// 	this.disconnectClient("Invalid authentification token.", version);
+		// 	return;
+		// }
 
-		const authToken = msg.readString();
+		const authToken = '';//msg.readString();
 		this.processLogin(accountName, password, authToken, version);
 	}
 
