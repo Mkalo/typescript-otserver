@@ -27,10 +27,11 @@ export abstract class Protocol {
 		this.connection = connection;
 	}
 
-	public abstract parsePacket(msg: NetworkMessage): void;
-	public abstract onSendMessage(msg: OutputMessage): void;
 	public abstract onRecvFirstMessage(msg: NetworkMessage): void;
 	public abstract onConnect(): void;
+
+	public parsePacket(msg: NetworkMessage): void {};
+	public onSendMessage(msg: OutputMessage): void {};
 
 	public onRecvMessage(msg: NetworkMessage): void {
 
@@ -64,9 +65,6 @@ export class ProtocolLogin extends Protocol {
 	static readonly serverSendsFirst: boolean = false;
 	static readonly protocolIdentifier: number = 0x01;
 	static readonly protocolName: string = "login protocol";
-
-	public parsePacket(msg: NetworkMessage): void {
-	}
 
 	public disconnectClient(text: string, version: number) {
 		const output = new OutputMessage();
@@ -290,10 +288,6 @@ export class ProtocolLogin extends Protocol {
 
 			return this.disconnect();
 		});
-	}
-
-	public onSendMessage(): void {
-
 	}
 
 }
