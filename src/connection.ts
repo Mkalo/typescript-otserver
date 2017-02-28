@@ -22,7 +22,7 @@ export class ConnectionManager {
     }
 
     public createConnection(server: Server, servicePort: ServicePort): Connection {
-        const connection: Connection = new Connection();
+        const connection: Connection = new Connection(server, servicePort);
         this.connections.push(connection);
         return connection;
     }
@@ -49,13 +49,17 @@ export class Connection {
     private protocol: Protocol;
     private socket: Socket;
 
+    private server: Server;
+
     private messageQueue: Array<NetworkMessage>;
     private servicePort: ServicePort;
 
     private message: NetworkMessage;
 
-    constructor() {
+    constructor(server: Server, servicePort: ServicePort) {
         this.connectionState = ConnectionState.Open;
+        this.servicePort = servicePort;
+        this.server = server;
     }
 
     private hasValidSocket(): boolean {
