@@ -82,6 +82,30 @@ export class ProtocolLogin extends Protocol {
 
 	}
 
+	private decryptRSA(msg: NetworkMessage): boolean {
+		const from = msg.getBuffer();
+		const bufferToDecrypt: Buffer = new Buffer(128);
+		
+		const start = msg.getPosition();
+		const end = start + 128;
+		from.copy(bufferToDecrypt, 0, start, end);
+
+		try {
+			if (!g_rsa.getRSA().decrypt(bufferToDecrypt)) {
+				return false;
+			}
+		} catch (e) {
+			const err = e.stack;
+			return false;
+		}
+		// set position += 128
+
+
+		const rsaByte = msg.readByte();
+
+		return rsaByte === 0;
+	}
+
 	public onRecvFirstMessage(msg: NetworkMessage): void {
 		const operatingSytem = msg.readUInt16();
 		const version = msg.readUInt16();
@@ -93,7 +117,7 @@ export class ProtocolLogin extends Protocol {
 		msg.skipBytes(1); // 0 byte idk what it is
 
 
-		if (!g_rsa.getRSA().decrypt(msg)) {
+		if (!this.decryptRSA(msg)) {
 			return this.disconnect();
 		}
 
@@ -108,9 +132,9 @@ export class ProtocolLogin extends Protocol {
 		this.enableXTEAEncryption();
 		this.setXTEAKey(key);
 
-		if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
-			return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);
-		}
+		// if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
+		// 	return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);
+		// }
 
 		// if (g_game.getGameState() == GameState.Startup) {
 		// 	return this.disconnectClient("Gameworld is starting up. Please wait.", version);
