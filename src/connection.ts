@@ -60,6 +60,7 @@ export class Connection {
         this.connectionState = ConnectionState.Open;
         this.servicePort = servicePort;
         this.server = server;
+		this.messageQueue = [];
     }
 
     private hasValidSocket(): boolean {
