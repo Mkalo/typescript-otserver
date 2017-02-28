@@ -9,7 +9,7 @@
     "watch": "tsc -w",
     "start": "node ./bin/src",
     "buildstart": "npm run build && npm start",
-	"pretest": "tsc --baseUrl test",
+    "pretest": "tsc --baseUrl test",
     "test": "mocha \"bin/test/*.js\""
   },
   "repository": {
@@ -34,9 +34,9 @@
   "dependencies": {
     "@types/mocha": "^2.2.39",
     "@types/node": "^7.0.5",
-    "big-integer": "^1.6.17",
+    "bignum": "^0.12.5",
+    "deep-extend": "^0.4.1",
     "node-rsa": "^0.4.2",
-    "xml2json": "^0.11.0",
-    "deep-extend": "^0.4.1"
+    "xml2json": "^0.11.0"
   }
 }
