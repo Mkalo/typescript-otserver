@@ -42,21 +42,21 @@ export class NetworkMessage extends Binary {
         let a: number = 1;
         let b: number = 0;
         
-        let i: number = this.getPosition();
-        const buffer: Buffer = this.getBuffer();
+        const startingPosition: number = this.getPosition();
 
         while (length > 0) {
             let tmp: number = length > 5552 ? 5552 : length;
             length -= tmp;
 
             do {
-                a += buffer[i++] << 0;
+                a += this.readByte() << 0;
                 b += a;
             } while (--tmp);
 
             a %= adler;
             b %= adler;
         }
+        this.setPosition(startingPosition);
         
         return NumericType.getUInt32((b << 16) | a);
 	}
