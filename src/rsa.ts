@@ -1,11 +1,10 @@
 import * as BigInteger from "big-integer";
-import * as NodeRSA from "node-rsa";
 
 export class RSA {
 
 	private static defaultp: string = "14299623962416399520070177382898895550795403345466153217470516082934737582776038882967213386204600674145392845853859217990626450972452084065728686565928113";
 	private static defaultq: string = "7630979195970404721891201847792002125535401292779123937207447574596692788513647179235335529307251350570728407373705564708871762033017096809910315212884101";
-    private static instance: RSA = new RSA();
+	private static instance: RSA = new RSA();
 
 	private p: BigInteger;
 	private q: BigInteger;
@@ -15,7 +14,6 @@ export class RSA {
 	private dmp1: BigInteger;
 	private dmq1: BigInteger;
 	private coeff: BigInteger;
-	private key: NodeRSA = new NodeRSA({ b: 1024 });    
 
 	protected constructor() {
 		this.setRSA(RSA.defaultp, RSA.defaultq);
@@ -37,16 +35,20 @@ export class RSA {
 		this.coeff = this.q.modInv(this.p);
 	}
 
-	public getRSA(): NodeRSA {
-		return this.key;
-	}
+	public decrypt(buffer: Buffer, start: number = 0): void {
+		const bufferToDecrypt: Buffer = new Buffer(128);
+		buffer.copy(bufferToDecrypt, 0, start, start + 128);
 
-    public decrypt(buffer: Buffer): Buffer {
-        const c: BigInteger = BigInteger(buffer.toString("hex"), 16);
-        // m = c^d mod n
-        const m: BigInteger = c.modPow(this.d, this.n);
-        return Buffer.from(m.toString(16), "hex");
-    }
+		const c: BigInteger = BigInteger(bufferToDecrypt.toString("hex"), 16);
+		const m: BigInteger = c.modPow(this.d, this.n); // m = c^d mod n
+		const dec = m.toString(16);
+		const decrypted = Buffer.from(dec, "hex");
+
+		let success = decrypted.length === 127;
+
+		buffer[start] = success ? 0 : 1;
+		decrypted.copy(buffer, start + 1, 0, 127);
+	}
 
 	public static getInstance(): RSA {
 		return this.instance;
