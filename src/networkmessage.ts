@@ -49,24 +49,14 @@ export class NetworkMessage extends Binary {
 		return NumericType.getUInt32((b << 16) | a);
 	}
 
-	private growBuffer() {
-		const spaceToAdd = 20;
-		const oldBuffer = this.getBuffer();
-		const newBuffer = new Buffer(oldBuffer.length + spaceToAdd);
-
-		oldBuffer.copy(newBuffer);
-		this.setBuffer(newBuffer);
-	}
-
 	public addPaddingBytes(bytes: number) {
-		if (!this.canAdd(bytes)) {
-			// const amountOfSpaceAtTheEnd = this.getPosition();
-			this.growBuffer(); // bytes
-		}
-
 		for (let i = 0; i < bytes; i++) {
 			this.addUInt8(0x33);
 		}
+	}
+
+	public getOutputBuffer(): Buffer {
+		return super.getBuffer(); /// ? xD
 	}
 
 }
@@ -77,32 +67,7 @@ export class OutputMessage extends NetworkMessage {
 		const length = packetBuffer.length;
 		const lengthBuffer = new Buffer(2);
 		lengthBuffer.writeUInt16LE(length, 0);
-		this.insertToFront(lengthBuffer);
-		// const length = packetBuffer.length;
-		// // const length = this.getLength();
-		// const newBuffer = new Buffer(length + 2);
-
-		// packetBuffer.copy(newBuffer, 2, 0, length);
-		// newBuffer.writeUInt16LE(length, 0);
-
-		// this.setBuffer(newBuffer);
-	}
-
-	private insertToFront(buffer: Buffer): void {
-		const packetBuffer = this.getBuffer();
-		const length = packetBuffer.length;
-		// const length = this.getLength();
-		const startOfOldBuffer = buffer.length;
-
-		const newBuffer = new Buffer(length + startOfOldBuffer);
-
-		packetBuffer.copy(newBuffer, startOfOldBuffer, 0, length);
-		
-		for (let i = 0; i < buffer.length; i++) {
-			newBuffer[i] = buffer[i];
-		}
-
-		this.setBuffer(newBuffer);
+		this.transformBuffer([lengthBuffer, packetBuffer]);
 	}
 
 	public getBuffer(): Buffer {
@@ -112,13 +77,38 @@ export class OutputMessage extends NetworkMessage {
 		return buffer;
 	}
 
+	private transformBuffer(buffers: Buffer[]) { // concats buffers and makes output buffer still "dynamic" because it adds extra bytes so final length is NetworkMessage.NETWORKMESSAGE_MAXSIZE
+		let buffersLengthSum = 0;
+
+		for (let i = 0; i < buffers.length; i++) {
+			const buffer = buffers[i];
+			buffersLengthSum += buffer.length;
+		}
+
+		this.setPosition(buffersLengthSum);
+
+		const missingBytesToMaxSize = NetworkMessage.NETWORKMESSAGE_MAXSIZE - buffersLengthSum;
+		const missingBYtesBuffer = new Buffer(missingBytesToMaxSize);
+
+		buffers.push(missingBYtesBuffer);
+
+		const newBuffer = Buffer.concat(buffers);
+		this.setBuffer(newBuffer);
+	}
+
 	public addHeader(): void {
-		const length = this.getLength();
+		const packetBuffer = this.getBuffer();
+		const length = packetBuffer.length;
+
+		const startingPosition: number = this.getPosition();
+		this.setPosition(0);
 		const checksum = this.calculateAdler32Checksum(length);
+		this.setPosition(startingPosition);
 		const checksumBuffer = new Buffer(4);
-		checksumBuffer.writeUInt16LE(checksum, 0);
-		this.insertToFront(checksumBuffer);
+		checksumBuffer.writeUInt32LE(checksum, 0);
+		this.transformBuffer([checksumBuffer, packetBuffer]);
 
 		this.addPacketLength();
 	}
+	
 }

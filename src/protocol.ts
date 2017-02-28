@@ -19,9 +19,7 @@ export abstract class Protocol {
 	static readonly protocolName: string;
 
 	private connection: Connection;
-	private encryptionEnabled: boolean = false;
 	private xteaKey: XTEA;
-
 
 	constructor(connection: Connection) {
 		this.connection = connection;
@@ -35,16 +33,12 @@ export abstract class Protocol {
 	public onRecvMessage(msg: NetworkMessage): void {}
 
 	public send(msg: OutputMessage): void {
-		// add length
+		msg.addPacketLength();
 
-		// msg.addPacketLength();
-
-		// this.xteaKey.encrypt(msg);
-		// msg.addHeader();
-		// if (this.encryptionEnabled) {
-		// 	// const encrypted
-		// }
-
+		if (this.isEncryptionEnabled()) {
+			this.xteaKey.encrypt(msg);
+			msg.addHeader();
+		}
 
 		return this.connection.send(msg);
 	}
@@ -53,16 +47,16 @@ export abstract class Protocol {
 		// TODO
 	}
 
-	public enableXTEAEncryption(): boolean {
-		if (this.xteaKey !== undefined) {
-			this.encryptionEnabled = true;
+	protected isEncryptionEnabled() {
+		return !!this.xteaKey;
+	}
+
+	public enableXTEAEncryption(key: Uint32Array): boolean {
+		if (!this.xteaKey) {
+			this.xteaKey = new XTEA(key);
 			return true;
 		}
 		return false;
-	}
-
-	public setXTEAKey(key: Uint32Array): void {
-		this.xteaKey = new XTEA(key);
 	}
 
 }
@@ -92,10 +86,7 @@ export class ProtocolLogin extends Protocol {
 		}
 
 		g_rsa.decrypt(buffer, msg.getPosition());
-
-		const rsaByte = msg.readByte();
-
-		return rsaByte === 0;
+		return msg.readByte() === 0;
 	}
 
 	public onRecvFirstMessage(msg: NetworkMessage): void {
@@ -113,7 +104,6 @@ export class ProtocolLogin extends Protocol {
 			return this.disconnect();
 		}
 
-
 		const key = new Uint32Array(4);
 		key[0] = msg.readUInt32();
 		key[1] = msg.readUInt32();
@@ -122,8 +112,7 @@ export class ProtocolLogin extends Protocol {
 
 		const xtea: XTEA = new XTEA(key);
 
-		this.enableXTEAEncryption();
-		this.setXTEAKey(key);
+		this.enableXTEAEncryption(key);
 
 		// if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
 		// 	return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);

@@ -98,7 +98,7 @@ export class Connection {
 	        checksum = this.message.calculateAdler32Checksum(length);
         }
 
-        if (recvChecksum != checksum) {
+        if (recvChecksum !== checksum) {
             this.message.setPosition(this.message.getPosition() - 4);
         }
 
