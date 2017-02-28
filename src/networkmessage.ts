@@ -20,18 +20,6 @@ export class NetworkMessage extends Binary {
 		super(NetworkMessage.NETWORKMESSAGE_MAXSIZE);
 	}
 
-	public addHeader() {
-		throw Error("Not implemented.");
-	}
-
-	public addPacketSize() {
-		throw Error("Not implemented.");
-	}
-
-	public removeHeader() {
-		throw Error("Not implemented.");
-	}
-
 	public calculateAdler32Checksum(length: number): number {
 		if (length > NetworkMessage.NETWORKMESSAGE_MAXSIZE || !this.canRead(length)) {
             return 0;
