@@ -35,22 +35,18 @@ export class RSA {
 		this.dmp1 = this.d.mod(p_1);
 		this.dmq1 = this.d.mod(q_1);
 		this.coeff = this.q.modInv(this.p);
-
-		this.key.importKey({
-			n: this.n.toString(),
-			e: this.e.toJSNumber(),
-			d: this.d.toString(),
-			p: this.p.toString(),
-			q: this.q.toString(),
-			dmp1: this.dmp1.toString(),
-			dmq1: this.dmq1.toString(),
-			coeff: this.coeff.toString()
-		}, "components");
 	}
 
 	public getRSA(): NodeRSA {
 		return this.key;
 	}
+
+    public decrypt(buffer: Buffer): Buffer {
+        const c: BigInteger = BigInteger(buffer.toString("hex"), 16);
+        // m = c^d mod n
+        const m: BigInteger = c.modPow(this.d, this.n);
+        return Buffer.from(m.toString(16), "hex");
+    }
 
 	public static getInstance(): RSA {
 		return this.instance;

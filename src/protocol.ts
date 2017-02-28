@@ -89,11 +89,15 @@ export class ProtocolLogin extends Protocol {
 		const start = msg.getPosition();
 		const end = start + 128;
 		from.copy(bufferToDecrypt, 0, start, end);
-
+        let test: Buffer = g_rsa.decrypt(bufferToDecrypt);
+        console.log("Encrypted:");
+        console.log(bufferToDecrypt.toString());
+        console.log("Descrypted:");
+        console.log(test.toString());
 		try {
-			if (!g_rsa.getRSA().decrypt(bufferToDecrypt)) {
-				return false;
-			}
+			//if (!g_rsa.getRSA().decrypt(bufferToDecrypt)) {
+			//	return false;
+			//}
 		} catch (e) {
 			const err = e.stack;
 			return false;
