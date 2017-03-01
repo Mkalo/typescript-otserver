@@ -81,6 +81,7 @@ export class Connection {
 		if (this.hasValidSocket) {
 			return this.socket.address().address;
 		}
+		
 		return "0.0.0.0";
 	}
 

@@ -29,7 +29,7 @@ export class Otserv {
 
         const serviceManager: ServiceManager = new ServiceManager();
         serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
-		serviceManager.addService<ProtocolGame>(ProtocolGame, 7172); // for now 
+		serviceManager.addService<ProtocolGame>(ProtocolGame, g_config.worlds[0].port);
         serviceManager.run();
         
         console.log("Server started!");
