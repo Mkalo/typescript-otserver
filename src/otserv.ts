@@ -2,36 +2,36 @@ import * as path from 'path';
 import { RSA } from './rsa';
 import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkMessage";
-import { Service } from "./server";
-import { ProtocolLogin } from "./protocol";
+import { ServiceManager } from "./server";
+import { ProtocolLogin, ProtocolGame } from "./protocols";
 import { Config } from "./config";
 import { OTBLoader } from './OTBLoader';
 import { OTBMLoader } from './OTBMLoader';
-import { LoadingText, printInfo } from './loadingText';
+import { Game } from './game';
+
 
 export const g_config: Config = new Config();
 export const g_rsa: RSA = RSA.getInstance();
+export const g_game: Game = new Game();
 const dataDirectory = path.join(__dirname, '..', '..', 'data');
 
 export class Otserv {
 
 	public start() {
-		printInfo();
-		const loadingItemsText = new LoadingText("Loading items");
-		const itemsFileName = path.join(dataDirectory, g_config.world.itemsFileName);
-		const otbLoader = new OTBLoader();
-		otbLoader.loadItems(itemsFileName);
-		loadingItemsText.stop();
+		// console.log("Loading items...");
+		// const itemsFileName = path.join(dataDirectory, g_config.world.itemsFileName);
+		// const otbLoader = new OTBLoader();
+		// otbLoader.loadItems(itemsFileName);
 
-		const loadingMapText = new LoadingText("Loading map");
-		const mapFileName = path.join(dataDirectory, g_config.world.mapFileName);
-		const otbmLoader = new OTBMLoader();
-		otbmLoader.load(mapFileName);
-		loadingMapText.stop();
+		// console.log("Loading map...");
+		// const mapFileName = path.join(dataDirectory, g_config.world.mapFileName);
+		// const otbmLoader = new OTBMLoader();
+		// otbmLoader.load(mapFileName);
 
-		const service: Service<ProtocolLogin> = new Service<ProtocolLogin>(ProtocolLogin);
-		// console.log(service.is_checksummed());
-		console.log("Typescripten server is online! <--- LUL");
+        const serviceManager: ServiceManager = new ServiceManager();
+        serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
+		serviceManager.addService<ProtocolGame>(ProtocolGame, g_config.worlds[0].port);
+        serviceManager.run();
 	}
 
 }

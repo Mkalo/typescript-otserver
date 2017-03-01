@@ -1,16 +1,21 @@
 const config = {
-	world: {
-		mapFileName: 'map', // without '.otbm'
-		itemsFileName: 'items', // without '.otb'
-		type: "pvp", // "pvp", "no-pvp" and "pvp-enforced"
-		name: "Typescripten",
+	loginServer: {
+		port: 7171
+	},
+	game: {
+		freePremium: true,
 		motd: "Hello from the other side. xP"
 	},
-	connection: {
-		host: "127.0.0.1",
-		loginPort: 7171,
-		gamePort: 7172
-	},
+	worlds: [
+		{
+			name: "Typescripten",
+			type: "pvp", // "pvp", "no-pvp" and "pvp-enforced"
+			mapFileName: 'map', // without '.otbm'
+			itemsFileName: 'items', // without '.otb'
+			ip: "127.0.0.1",
+			port: 7172
+		}
+	],
 	db: {
 		type: "mysql",
 		host: '127.0.0.1',

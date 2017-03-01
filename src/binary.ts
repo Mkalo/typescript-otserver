@@ -153,6 +153,11 @@ export class Binary {
 		return bytes.toString();
 	}
 
+	public skipBytes(value: number): void {
+		if (!this.canRead(value)) throw Error(ON_READ_OUT_OF_THE_BUFFER);
+		this.position += value;
+	}
+
 	public addByte(value: number): void {
 		if (!this.canAdd(1)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
 

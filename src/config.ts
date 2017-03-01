@@ -9,33 +9,57 @@ class DBConfig {
 	public dbName: string = 'some_ots';
 }
 
-class ConnectionConfig {
-	public host: string = '127.0.0.1';
-	public loginPort: number = 7171;
-	public gamePort: number = 7172;
+class WorldConfig {
+	name: string = 'Typescripten';
+	type: string = 'pvp';
+	mapFileName: string = 'map';
+	itemsFileName: string = 'items';
+	ip: string = "127.0.0.1";
+	port: number = 7172;
 }
 
-class WorldConfig {
-	public mapFileName: string = 'map';
-	public itemsFileName: string = 'items';
-	public type: string = 'pvp';
-	public name: string = 'Typescripten';
-	public motd: string = 'Message of the day!';
+class GameConfig {
+	freePremium: boolean = true;
+	motd: string = "dasdadasdas";
+}
+
+class LoginServerConfig {
+	port: number = 7171;
 }
 
 export class Config {
 
-    public world: WorldConfig = new WorldConfig();
-    public connection: ConnectionConfig = new ConnectionConfig();
-    public db: DBConfig = new DBConfig();
+	public loginServer: LoginServerConfig;
+	public worlds: WorldConfig[];
+    public db: DBConfig;
+	public game: GameConfig;
 
 	constructor() {
+		this.loginServer = new LoginServerConfig();
+		this.worlds = [];
+		this.db = new DBConfig();
+		this.game = new GameConfig();
+
 		try {
-			const loadedConfig = require('../config.js').default;
-			deepExtend(this, loadedConfig);
+			this.loadConfig();
 		} catch (e) {
 			throw Error("Unable to load config.js. Did you copy `config.js.sample` to `config.js`?");
 		}
 	}
-	
+
+	private loadConfig() {
+		const loadedConfig = require('../config.js').default;
+
+		deepExtend(this.loginServer, loadedConfig.loginServer);
+		deepExtend(this.db, loadedConfig.db);
+		deepExtend(this.game, loadedConfig.game);
+
+		const configWorlds = loadedConfig.worlds || [];
+
+		for (let i = 0; i < configWorlds.length; i++) {
+			const world = new WorldConfig();
+			deepExtend(world, configWorlds[i]);
+			this.worlds.push(world);
+		}
+	}
 }

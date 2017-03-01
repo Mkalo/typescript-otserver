@@ -1,5 +1,5 @@
 import { NumericType } from "./ctypes";
-import { NetworkMessage } from "./networkMessage";
+import { NetworkMessage, OutputMessage } from "./networkMessage";
 
 export class XTEA {
 
@@ -11,13 +11,13 @@ export class XTEA {
 		this.key = new Uint32Array(key);
 	}
 
-	public encrypt(msg: NetworkMessage): void {
+	public encrypt(msg: OutputMessage): void {
 		const paddingBytes: number = msg.getPosition() % 8;
 		if (paddingBytes > 0) {
 			msg.addPaddingBytes(8 - paddingBytes);
 		}
 
-		const buffer: Buffer = msg.getBuffer();
+		const buffer: Buffer = msg.getOutputBuffer();
 		const messageLength: number = msg.getPosition();
 		let readPos: number = 0;
 		while (readPos < messageLength) {

@@ -1,10 +1,10 @@
 import { XTEA } from '../src/xtea';
-import { NetworkMessage } from '../src/networkMessage';
+import { NetworkMessage, OutputMessage } from '../src/networkMessage';
 import * as assert from 'assert';
 
 describe('XTEA', () => {
     it('encrypt and decrypt', () => {
-		const msg: NetworkMessage = new NetworkMessage();
+		const msg: OutputMessage = new OutputMessage();
 		const xtea: XTEA = new XTEA(new Uint32Array([121324, 105464, 50055, 312015]));
 		const str = "Mkalo is awesome.";
 		msg.addString(str);
