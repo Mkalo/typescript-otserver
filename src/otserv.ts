@@ -3,7 +3,7 @@ import { RSA } from './rsa';
 import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkmessage";
 import { ServiceManager } from "./server";
-import { ProtocolLogin } from "./protocol";
+import { ProtocolLogin, ProtocolGame } from "./protocols";
 import { Config } from "./config";
 import { OTBLoader } from './OTB-loader';
 import { OTBMLoader } from './OTBM-loader';
@@ -29,6 +29,7 @@ export class Otserv {
 
         const serviceManager: ServiceManager = new ServiceManager();
         serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
+		serviceManager.addService<ProtocolGame>(ProtocolGame, 7172); // for now 
         serviceManager.run();
         
         console.log("Server started!");

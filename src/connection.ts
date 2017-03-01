@@ -1,5 +1,5 @@
 import { createServer, Server, Socket } from "net";
-import { Protocol } from "./protocol";
+import { Protocol } from "./protocols";
 import { NetworkMessage, OutputMessage } from "./networkmessage";
 import { ServicePort } from "./server";
 

@@ -1,86 +1,15 @@
-import { Connection } from "./connection";
-import { XTEA } from "./xtea";
-import { NetworkMessage, OutputMessage } from "./networkmessage";
-import { g_rsa, g_config } from './otserv';
-import { GameState } from './enums';
+import { XTEA } from "../xtea";
+import { NetworkMessage, OutputMessage } from "../networkmessage";
+import { g_rsa, g_config, g_game} from '../otserv';
+import { GameState } from '../enums';
+import { Protocol } from './protocol';
 
-const CLIENT_VERSION_STR = 123; // for now
-const CLIENT_VERSION_MIN = 10;
-const CLIENT_VERSION_MAX = 30;
+const CLIENT_VERSION_STR = "10"; // for now
+const CLIENT_VERSION_MIN = 1;
+const CLIENT_VERSION_MAX = 10000;
 
 const AUTHENTICATOR_DIGITS = 6;
 const AUTHENTICATOR_PERIOD = 30;
-
-export abstract class Protocol {
-
-	static readonly useChecksum: boolean;
-	static readonly serverSendsFirst: boolean;
-	static readonly protocolIdentifier: number;
-	static readonly protocolName: string;
-
-	private connection: Connection;
-	private xteaKey: XTEA;
-
-	constructor(connection: Connection) {
-		this.connection = connection;
-	}
-
-	public abstract onRecvFirstMessage(msg: NetworkMessage): void;
-
-	public onConnect(): void {
-		return;
-	};
-	public parsePacket(msg: NetworkMessage): void {
-		return;
-	};
-
-	public onSendMessage(msg: OutputMessage): void {
-		msg.addPacketLength();
-
-		if (this.isEncryptionEnabled()) {
-			this.xteaKey.encrypt(msg);
-			msg.addHeader();
-		}
-	}
-
-	public onRecvMessage(msg: NetworkMessage): void {
-		// TO DO decrypt stuff...
-		return;
-	}
-
-	public send(msg: OutputMessage): void {
-		if (this.connection)
-			return this.connection.send(msg);
-	}
-
-	protected disconnect(): void {
-		// TODO
-	}
-
-	protected isEncryptionEnabled() {
-		return !!this.xteaKey;
-	}
-
-	protected enableXTEAEncryption(key: Uint32Array): boolean {
-		if (!this.xteaKey) {
-			this.xteaKey = new XTEA(key);
-			return true;
-		}
-		return false;
-	}
-
-	protected decryptRSA(msg: NetworkMessage): boolean {
-		const buffer = msg.getBuffer();
-		
-		if ((buffer.length - msg.getPosition()) < 128) { // rest of packet is to short to be RSA encrypted
-			return false;
-		}
-
-		g_rsa.decrypt(buffer, msg.getPosition());
-		return msg.readByte() === 0;
-	}
-
-}
 
 export class ProtocolLogin extends Protocol {
 
@@ -124,35 +53,17 @@ export class ProtocolLogin extends Protocol {
 
 		this.enableXTEAEncryption(key);
 
-		// if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
-		// 	return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);
-		// }
+		if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
+			return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);
+		}
 
-		// if (g_game.getGameState() == GameState.Startup) {
-		// 	return this.disconnectClient("Gameworld is starting up. Please wait.", version);
-		// }
+		if (g_game.getState() === GameState.Startup) {
+			return this.disconnectClient("Gameworld is starting up. Please wait.", version);
+		}
 
-		// if (g_game.getGameState() == GameState.Maintain) {
-		// 	return this.disconnectClient("Gameworld is under maintenance.\nPlease re-connect in a while.", version);
-		// }
-
-
-		// BanInfo banInfo;
-		// auto connection = getConnection();
-		// if (!connection) {
-		// 	return;
-		// }
-
-		// if (IOBan::isIpBanned(connection.getIP(), banInfo)) {
-		// 	if (banInfo.reason.empty()) {
-		// 		banInfo.reason = "(none)";
-		// 	}
-
-		// 	std::ostringstream ss;
-		// 	ss << "Your IP has been banned until " << formatDateShort(banInfo.expiresAt) << " by " << banInfo.bannedBy << ".\n\nReason specified:\n" << banInfo.reason;
-		// 	disconnectClient(ss.str(), version);
-		// 	return;
-		// }
+		if (g_game.getState() === GameState.Maintain) {
+			return this.disconnectClient("Gameworld is under maintenance.\nPlease re-connect in a while.", version);
+		}
 
 		const accountName = msg.readString();
 		if (accountName === "") {
@@ -184,7 +95,7 @@ export class ProtocolLogin extends Protocol {
 		const characters = [
 			{
 				name: "Noob",
-				worldId: 1
+				worldId: 0
 			},
 			{
 				name: "Odsadaa",
@@ -192,15 +103,15 @@ export class ProtocolLogin extends Protocol {
 			},
 			{
 				name: "Fdfsdgd Fdd",
-				worldId: 2
+				worldId: 0
 			},
 			{
 				name: "Lul",
-				worldId: 1
+				worldId: 0
 			},
 			{
 				name: "Noob",
-				worldId: 1
+				worldId: 0
 			}
 		];
 
@@ -264,8 +175,11 @@ export class ProtocolLogin extends Protocol {
 	}
 
 	private processLogin(accountName: string, password: string, authToken: string, version: number): void {
+		const connectionIP = this.connection.getIp();
+		// check ip
+
 		this.getCharactersListInfo(accountName, password, authToken, (err, info) => {
-			if (err) return this.disconnectClient("Account name or password is not correct.", version);
+			if (err) return this.disconnectClient(err, version);
 
 			const ticks = new Date().getTime() / AUTHENTICATOR_PERIOD;
 			const sessionKey = [accountName, password, authToken, ticks.toString()].join('\n');
