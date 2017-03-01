@@ -1,6 +1,8 @@
-export const NODE_START = 0xFE;
-export const NODE_END = 0xFF;
-export const ESCAPE = 0xFD;
+export enum NodeType {
+	Start = 0xFE,
+	End = 0xFF,
+	Escape = 0xFD
+};
 
 export enum FluidType {
 	Empty,

@@ -2,6 +2,7 @@ import { Position } from './position';
 import { Item } from './item';
 
 export class Town {
+
 	private id: number;
 	private name: string;
 	private templePosition: Position;
@@ -11,11 +12,13 @@ export class Town {
 		this.name = townName;
 		this.templePosition = templePosition;
 	}
+
 }
 
 
 export class Towns {
-	private towns: Array<Town>;
+
+	private towns: Town[];
 
 	constructor() {
 		this.towns = [];
@@ -24,33 +27,37 @@ export class Towns {
 	public add(town: Town) {
 		this.towns.push(town);
 	}
+
 }
 
 export class Tile {
-	public x: number;
-	public y: number;
-	public z: number;
 
 	public isProtectionZone: boolean = false;
 	public isNoPvpZone: boolean = false;
 	public isPvpZone: boolean = false;
 	public isNoLogoutZone: boolean = false;
 	public isRefreshZone: boolean = false;
-
 	public houseID: number;
+	public ground: Item;
 
-	public ground: Item; // for now
-
-	constructor() {
-
-	}
+	private position: Position;
 
 	public addItem(item: Item) {
 		// check if item is ground
 	}
+
+	public setPosition(position: Position): void {
+		this.position = position;
+	}
+
+	public getPosition(): Position {
+		return this.position;
+	}
+
 }
 
 export class WorldMap {
+
 	public description: string;
 
 	private towns: Towns;
@@ -59,11 +66,12 @@ export class WorldMap {
 		this.towns = new Towns();
 	}
 
-	public addTown(town: Town) {
+	public addTown(town: Town): void {
 		this.towns.add(town);
 	}
 
-	public setTile(tile: Tile) {
+	public setTile(tile: Tile): void {
 
 	}
+
 }

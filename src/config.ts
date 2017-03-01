@@ -1,12 +1,12 @@
 import * as deepExtend from 'deep-extend';
 
 class DBConfig {
-	type: string = 'mysql';
-	host: string = '127.0.0.1';
-	port: number = 3306;
-	user: string = 'root';
-	password: string = '';
-	dbName: string = 'some_ots';
+	public type: string = 'mysql';
+	public host: string = '127.0.0.1';
+	public port: number = 3306;
+	public user: string = 'root';
+	public password: string = '';
+	public dbName: string = 'some_ots';
 }
 
 class WorldConfig {
@@ -28,9 +28,10 @@ class LoginServerConfig {
 }
 
 export class Config {
+
 	public loginServer: LoginServerConfig;
 	public worlds: WorldConfig[];
-	public db: DBConfig;
+    public db: DBConfig;
 	public game: GameConfig;
 
 	constructor() {

@@ -11,13 +11,16 @@ export class NetworkMessage extends Binary {
 	public static MAX_PROTOCOL_BODY_LENGTH = NetworkMessage.MAX_BODY_LENGTH - 10;
 
 
-	constructor(bufferOrLength?: Buffer | number) {
-		if (typeof bufferOrLength !== "undefined") {
-			super(bufferOrLength);
+	constructor(noArg?: any);
+	constructor(buffer: Buffer);
+	constructor(bufferLength: number);
+	constructor(p1: any) {
+		if (p1 === undefined) {
+			super(NetworkMessage.NETWORKMESSAGE_MAXSIZE);
 			return;
 		}
 
-		super(NetworkMessage.NETWORKMESSAGE_MAXSIZE);
+		super(p1);
 	}
 
 	public calculateAdler32Checksum(length: number): number {

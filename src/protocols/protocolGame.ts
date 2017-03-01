@@ -42,7 +42,7 @@ export class ProtocolGame extends Protocol {
 	}
 
 	public onRecvFirstMessage(msg: NetworkMessage): void {
-
+		return;
 	}
 
 }
