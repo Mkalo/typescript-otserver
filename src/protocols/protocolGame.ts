@@ -16,7 +16,7 @@ export class ProtocolGame extends Protocol {
 	static readonly useChecksum: boolean = true;
 	static readonly serverSendsFirst: boolean = true;
 	static readonly protocolIdentifier: number = 0x00;
-	static readonly protocolName: string = "login game";
+	static readonly protocolName: string = "game protocol";
 
 	public onConnect() {
 		return;
