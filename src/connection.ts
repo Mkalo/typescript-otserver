@@ -54,8 +54,6 @@ export class Connection {
     private messageQueue: OutputMessage[];
     private servicePort: ServicePort;
 
-    private message: NetworkMessage;
-
     constructor(server: Server, servicePort: ServicePort) {
         this.connectionState = ConnectionState.Open;
         this.servicePort = servicePort;
@@ -80,54 +78,55 @@ export class Connection {
         return "0.0.0.0";
     }
 
-    public parsePacket(): void {
-        if (this.connectionState == ConnectionState.Closed || !this.message) {
+    public parsePacket(msg: NetworkMessage): void {
+        if (this.connectionState === ConnectionState.Closed) {
             return;
         }
 
-        const size: number = this.message.readUInt16();
+        const size: number = msg.readUInt16();
         if (size == 0 || size >= NetworkMessage.NETWORKMESSAGE_MAXSIZE - 16) {
             return;
         }
 
         let checksum: number = 0;
         const length: number = size - NetworkMessage.CHECKSUM_LENGTH;
-        const recvChecksum = this.message.readUInt32();
+        const recvChecksum = msg.readUInt32();
 
         if (length > 0) {
-	        checksum = this.message.calculateAdler32Checksum(length);
+	        checksum = msg.calculateAdler32Checksum(length);
         }
 
         if (recvChecksum !== checksum) {
-            this.message.setPosition(this.message.getPosition() - 4);
+            msg.setPosition(msg.getPosition() - 4);
         }
 
         if (!this.receivedFirst) {
             this.receivedFirst = true;
 
             if (!this.protocol) {
-                this.protocol = this.servicePort.makeProtocol(this, this.message, checksum == recvChecksum);
+                this.protocol = this.servicePort.makeProtocol(this, msg, checksum === recvChecksum);
                 if (!this.protocol) {
                     // close
                     return;
                 }
             } else {
-                this.message.setPosition(this.message.getPosition() + 1);
+                msg.setPosition(msg.getPosition() + 1);
             }
 
-            this.protocol.onRecvFirstMessage(this.message);
+            this.protocol.onRecvFirstMessage(msg);
         } else {
-            this.protocol.onRecvMessage(this.message);
+            this.protocol.onRecvMessage(msg);
         }
 
         this.accept();
     }
 
     public accept(protocolType?: Protocol): void {
+		//onConnect
         if (!protocolType) {
             this.socket.once("data", (buffer) => {
-                this.message = new NetworkMessage(buffer);
-                this.parsePacket();
+                const msg = new NetworkMessage(buffer);
+                this.parsePacket(msg);
             });
         } else {
             this.protocol = protocolType;
@@ -137,11 +136,11 @@ export class Connection {
     }
 
     public send(msg: OutputMessage): void {
-        if (this.connectionState != ConnectionState.Open) {
+        if (this.connectionState !== ConnectionState.Open) {
             return;
         }
 
-        const noPendingWrite: boolean = this.messageQueue.length == 0;
+        const noPendingWrite: boolean = this.messageQueue.length === 0;
         this.messageQueue.push(msg);
         if (noPendingWrite) {
             this.internalSend(msg);
@@ -150,7 +149,7 @@ export class Connection {
 
     private internalSend(msg: OutputMessage): void {
         this.protocol.onSendMessage(msg);
-        this.socket.write(msg.getBuffer(), "utf8", () => {
+        this.socket.write(msg.getBuffer(), () => {
             this.onWriteOperation();
         });
     }
@@ -158,7 +157,7 @@ export class Connection {
     private onWriteOperation(): void {
         this.messageQueue.shift();
         
-        if (this.messageQueue.length != 0) {
+        if (this.messageQueue.length > 0) {
             this.internalSend(this.messageQueue[0]);
         } else if (this.connectionState == ConnectionState.Closed) {
             // closeSocket();

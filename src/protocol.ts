@@ -27,20 +27,30 @@ export abstract class Protocol {
 
 	public abstract onRecvFirstMessage(msg: NetworkMessage): void;
 
-	public onConnect(): void {};
-	public parsePacket(msg: NetworkMessage): void {};
-	public onSendMessage(msg: OutputMessage): void {};
-	public onRecvMessage(msg: NetworkMessage): void {}
+	public onConnect(): void {
+		return;
+	};
+	public parsePacket(msg: NetworkMessage): void {
+		return;
+	};
 
-	public send(msg: OutputMessage): void {
+	public onSendMessage(msg: OutputMessage): void {
 		msg.addPacketLength();
 
 		if (this.isEncryptionEnabled()) {
 			this.xteaKey.encrypt(msg);
 			msg.addHeader();
 		}
+	}
 
-		return this.connection.send(msg);
+	public onRecvMessage(msg: NetworkMessage): void {
+		// TO DO decrypt stuff...
+		return;
+	}
+
+	public send(msg: OutputMessage): void {
+		if (this.connection)
+			return this.connection.send(msg);
 	}
 
 	protected disconnect(): void {
