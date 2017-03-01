@@ -21,22 +21,23 @@ export abstract class Protocol {
 	public abstract onRecvFirstMessage(msg: NetworkMessage): void;
 	public onConnect(): void {};
 
-	public parsePacket(msg: NetworkMessage): void {
-		return;
-	};
+	public parsePacket(msg: NetworkMessage): void {}; // we've to do like this because there are no virutal methods in TS
 
 	public onSendMessage(msg: OutputMessage): void {
 		msg.addPacketLength();
 
-		if (this.isEncryptionEnabled()) {
+		if (this.isXTEAEncryptionEnabled()) {
 			this.xteaKey.encrypt(msg);
-			msg.addHeader();
 		}
+		msg.addHeader();
 	}
 
 	public onRecvMessage(msg: NetworkMessage): void {
-		// TO DO decrypt stuff...
-		return;
+		if (this.isXTEAEncryptionEnabled && !this.xteaKey.decrypt(msg)) {
+			return
+		}
+
+		return this.parsePacket(msg);
 	}
 
 	public send(msg: OutputMessage): void {
@@ -48,7 +49,7 @@ export abstract class Protocol {
 		// TODO
 	}
 
-	protected isEncryptionEnabled() {
+	protected isXTEAEncryptionEnabled() {
 		return !!this.xteaKey;
 	}
 

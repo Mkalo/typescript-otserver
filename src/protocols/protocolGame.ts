@@ -1,8 +1,9 @@
 import { XTEA } from "../xtea";
 import { NetworkMessage, OutputMessage } from "../networkmessage";
-import { g_rsa, g_config, g_game} from '../otserv';
+import { g_rsa, g_config, g_game } from '../otserv';
 import { GameState } from '../enums';
 import { Protocol } from './protocol';
+import * as crypto from 'crypto';
 
 const CLIENT_VERSION_STR = "10"; // for now
 const CLIENT_VERSION_MIN = 1;
@@ -18,12 +19,30 @@ export class ProtocolGame extends Protocol {
 	static readonly protocolIdentifier: number = 0x00;
 	static readonly protocolName: string = "game protocol";
 
+	private challengeTimestamp: number;
+	private challengeRandom: number;
+
+	constructor(arg: any) {
+		super(arg);
+
+		const randomBytes = crypto.randomBytes(5);
+		this.challengeRandom = randomBytes.readUInt8(0);
+		this.challengeTimestamp = randomBytes.readUInt32BE(1);
+	}
+
 	public onConnect() {
-		return;
+		const output = new OutputMessage();
+
+		output.addByte(0x1F);
+
+		output.addUInt32(this.challengeTimestamp);
+		output.addByte(this.challengeRandom);
+
+		this.send(output);
 	}
 
 	public onRecvFirstMessage(msg: NetworkMessage): void {
-		
+
 	}
 
 }
