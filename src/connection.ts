@@ -4,163 +4,172 @@ import { NetworkMessage, OutputMessage } from "./networkmessage";
 import { ServicePort } from "./server";
 
 enum ConnectionState {
-    Open,
-    Closed
+	Open,
+	Closed
 };
 
 export class ConnectionManager {
-    
-    private static instance: ConnectionManager = new ConnectionManager();
-    protected connections: Connection[];
 
-    protected constructor() {
-        this.connections = [];
-    }
+	private static instance: ConnectionManager = new ConnectionManager();
+	protected connections: Connection[];
 
-    public static getInstance(): ConnectionManager {
-        return this.instance;
-    }
+	protected constructor() {
+		this.connections = [];
+	}
 
-    public createConnection(server: Server, servicePort: ServicePort): Connection {
-        const connection: Connection = new Connection(server, servicePort);
-        this.connections.push(connection);
-        return connection;
-    }
+	public static getInstance(): ConnectionManager {
+		return this.instance;
+	}
 
-    public releaseConnection(connection: Connection): void {
-        const find: number = this.connections.indexOf(connection);
-        if (find >= 0) {
-            this.connections.splice(find, 1);
-        }
-    }
+	public createConnection(server: Server, servicePort: ServicePort): Connection {
+		const connection: Connection = new Connection(server, servicePort);
+		this.connections.push(connection);
+		return connection;
+	}
 
-    public closeAll(): void {
-        // TODO
-    }
+	public releaseConnection(connection: Connection): void {
+		const find: number = this.connections.indexOf(connection);
+		if (find >= 0) {
+			this.connections.splice(find, 1);
+		}
+	}
+
+	public closeAll(): void {
+		const connections = this.connections;
+		const connectionsLength = connections.length;
+
+		for (let i = 0; i < connectionsLength; i++) {
+			const connection = connections[i];
+			connection.close();
+		}
+	}
 }
 
 export class Connection {
-    private connectionState: ConnectionState;
-    private receivedFirst: boolean;
+	private connectionState: ConnectionState;
+	private receivedFirst: boolean;
 
-    private packetsSent: number;
-    private timeConnected: number;
+	private packetsSent: number;
+	private timeConnected: number;
 
-    private protocol: Protocol;
-    private socket: Socket;
+	private protocol: Protocol;
+	private socket: Socket;
 
-    private server: Server;
+	private server: Server;
 
-    private messageQueue: OutputMessage[];
-    private servicePort: ServicePort;
+	private messageQueue: OutputMessage[];
+	private servicePort: ServicePort;
 
-    constructor(server: Server, servicePort: ServicePort) {
-        this.connectionState = ConnectionState.Open;
-        this.servicePort = servicePort;
-        this.server = server;
+	constructor(server: Server, servicePort: ServicePort) {
+		this.connectionState = ConnectionState.Open;
+		this.servicePort = servicePort;
+		this.server = server;
 		this.messageQueue = [];
-    }
+	}
 
-    private hasValidSocket(): boolean {
-        return !!this.socket;
-    }
-    
-    public setSocket(socket: Socket): void {
-        if (!this.hasValidSocket()) {
-            this.socket = socket;
-        }
-    }
+	private hasValidSocket(): boolean {
+		return !!this.socket;
+	}
 
-    public getIp(): string {
-        if (this.hasValidSocket) {
-            return this.socket.address().address;
-        }   
-        return "0.0.0.0";
-    }
+	public setSocket(socket: Socket): void {
+		if (!this.hasValidSocket()) {
+			this.socket = socket;
+		}
+	}
 
-    public parsePacket(msg: NetworkMessage): void {
-        if (this.connectionState === ConnectionState.Closed) {
-            return;
-        }
+	public getIp(): string {
+		if (this.hasValidSocket) {
+			return this.socket.address().address;
+		}
+		return "0.0.0.0";
+	}
 
-        const size: number = msg.readUInt16();
-        if (size == 0 || size >= NetworkMessage.NETWORKMESSAGE_MAXSIZE - 16) {
-            return;
-        }
+	public parsePacket(msg: NetworkMessage): void {
+		if (this.connectionState === ConnectionState.Closed) {
+			return;
+		}
 
-        let checksum: number = 0;
-        const length: number = size - NetworkMessage.CHECKSUM_LENGTH;
-        const recvChecksum = msg.readUInt32();
+		const size: number = msg.readUInt16();
+		if (size == 0 || size >= NetworkMessage.NETWORKMESSAGE_MAXSIZE - 16) {
+			return;
+		}
 
-        if (length > 0) {
-	        checksum = msg.calculateAdler32Checksum(length);
-        }
+		let checksum: number = 0;
+		const length: number = size - NetworkMessage.CHECKSUM_LENGTH;
+		const recvChecksum = msg.readUInt32();
 
-        if (recvChecksum !== checksum) {
-            msg.setPosition(msg.getPosition() - 4);
-        }
+		if (length > 0) {
+			checksum = msg.calculateAdler32Checksum(length);
+		}
 
-        if (!this.receivedFirst) {
-            this.receivedFirst = true;
+		if (recvChecksum !== checksum) {
+			msg.setPosition(msg.getPosition() - 4);
+		}
 
-            if (!this.protocol) {
-                this.protocol = this.servicePort.makeProtocol(this, msg, checksum === recvChecksum);
-                if (!this.protocol) {
-                    // close
-                    return;
-                }
-            } else {
-                msg.setPosition(msg.getPosition() + 1);
-            }
+		if (!this.receivedFirst) {
+			this.receivedFirst = true;
 
-            this.protocol.onRecvFirstMessage(msg);
-        } else {
-            this.protocol.onRecvMessage(msg);
-        }
+			if (!this.protocol) {
+				this.protocol = this.servicePort.makeProtocol(this, msg, checksum === recvChecksum);
+				if (!this.protocol) {
+					return this.close();
+				}
+			} else {
+				msg.setPosition(msg.getPosition() + 1);
+			}
 
-        this.accept();
-    }
+			this.protocol.onRecvFirstMessage(msg);
+		} else {
+			this.protocol.onRecvMessage(msg);
+		}
 
-    public accept(protocolType?: Protocol): void {
-		//onConnect
-        if (!protocolType) {
-            this.socket.once("data", (buffer) => {
-                const msg = new NetworkMessage(buffer);
-                this.parsePacket(msg);
-            });
-        } else {
-            this.protocol = protocolType;
-            protocolType.onConnect();
-            this.accept();
-        }
-    }
+		this.accept();
+	}
 
-    public send(msg: OutputMessage): void {
-        if (this.connectionState !== ConnectionState.Open) {
-            return;
-        }
+	public accept(protocolType?: Protocol): void {
+		if (!protocolType) {
+			this.socket.on("data", (buffer) => {
+				const msg = new NetworkMessage(buffer);
+				this.parsePacket(msg);
+			});
+		} else {
+			this.protocol = protocolType;
+			protocolType.onConnect();
+			this.accept();
+		}
+	}
 
-        const noPendingWrite: boolean = this.messageQueue.length === 0;
-        this.messageQueue.push(msg);
-        if (noPendingWrite) {
-            this.internalSend(msg);
-        }
-    }
+	public send(msg: OutputMessage): void {
+		if (this.connectionState !== ConnectionState.Open) {
+			return;
+		}
 
-    private internalSend(msg: OutputMessage): void {
-        this.protocol.onSendMessage(msg);
-        this.socket.write(msg.getBuffer(), () => {
-            this.onWriteOperation();
-        });
-    }
+		const noPendingWrite: boolean = this.messageQueue.length === 0;
+		this.messageQueue.push(msg);
+		if (noPendingWrite) {
+			this.internalSend(msg);
+		}
+	}
 
-    private onWriteOperation(): void {
-        this.messageQueue.shift();
-        
-        if (this.messageQueue.length > 0) {
-            this.internalSend(this.messageQueue[0]);
-        } else if (this.connectionState == ConnectionState.Closed) {
-            // closeSocket();
-        }
-    }
+	public close(): void {
+		ConnectionManager.getInstance().releaseConnection(this);
+		this.socket.destroy();
+	}
+
+	private internalSend(msg: OutputMessage): void {
+		this.protocol.onSendMessage(msg);
+		this.socket.write(msg.getBuffer(), () => {
+			this.onWriteOperation();
+		});
+	}
+
+	private onWriteOperation(): void {
+		this.messageQueue.shift();
+
+		if (this.messageQueue.length > 0) {
+			this.internalSend(this.messageQueue[0]);
+		} else if (this.connectionState == ConnectionState.Closed) {
+			this.close();
+		}
+	}
 }
