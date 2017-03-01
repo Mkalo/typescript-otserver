@@ -61,12 +61,23 @@ export abstract class Protocol {
 		return !!this.xteaKey;
 	}
 
-	public enableXTEAEncryption(key: Uint32Array): boolean {
+	protected enableXTEAEncryption(key: Uint32Array): boolean {
 		if (!this.xteaKey) {
 			this.xteaKey = new XTEA(key);
 			return true;
 		}
 		return false;
+	}
+
+	protected decryptRSA(msg: NetworkMessage): boolean {
+		const buffer = msg.getBuffer();
+		
+		if ((buffer.length - msg.getPosition()) < 128) { // rest of packet is to short to be RSA encrypted
+			return false;
+		}
+
+		g_rsa.decrypt(buffer, msg.getPosition());
+		return msg.readByte() === 0;
 	}
 
 }
@@ -88,17 +99,6 @@ export class ProtocolLogin extends Protocol {
 		return this.disconnect();
 	}
 
-	private decryptRSA(msg: NetworkMessage): boolean {
-		const buffer = msg.getBuffer();
-		
-		if ((buffer.length - msg.getPosition()) < 128) { // rest of packet is to short to be RSA encrypted
-			return false;
-		}
-
-		g_rsa.decrypt(buffer, msg.getPosition());
-		return msg.readByte() === 0;
-	}
-
 	public onRecvFirstMessage(msg: NetworkMessage): void {
 		const operatingSytem = msg.readUInt16();
 		const version = msg.readUInt16();
@@ -109,7 +109,7 @@ export class ProtocolLogin extends Protocol {
 
 		msg.skipBytes(1); // 0 byte idk what it is
 
-		const before1stRSA = msg.getPosition();
+		const beforeRSA = msg.getPosition();
 		if (!this.decryptRSA(msg)) {
 			return this.disconnect();
 		}
@@ -164,12 +164,7 @@ export class ProtocolLogin extends Protocol {
 			return this.disconnectClient("Invalid password.", version);
 		}
 
-		// read authenticator token and stay logged in flag from last 128 bytes
-		
-		// msg.setPosition(207);
-		// const pos = (msg.getLength() - 128) - msg.getPosition();
-		const pos2 = before1stRSA + 128;
-		msg.setPosition(pos2);
+		msg.setPosition(beforeRSA + 128);
 
 		msg.readUInt8(); // wtf is this?
 		msg.readUInt8(); // wtf is this?
@@ -177,17 +172,7 @@ export class ProtocolLogin extends Protocol {
 		const hardware1 = msg.readString();
 		const hardware2 = msg.readString();
 
-		// console.log("READ POS:", msg.getPosition());
-		// console.log(msg.getBuffer().length - 128);
-
-		let authToken = null;
-		if (!this.decryptRSA(msg)) {
-			// this.disconnectClient("Invalid authentification token.", version);
-			// return;
-			authToken = "";
-		} else {
-			authToken = msg.readString();
-		}
+		let authToken = this.decryptRSA(msg) ? msg.readString() : "";
 
 		this.processLogin(accountName, password, authToken, version);
 	}
