@@ -1,6 +1,6 @@
 import { createServer, Server, Socket } from "net";
 import { Protocol } from "./protocols";
-import { NetworkMessage, OutputMessage } from "./networkmessage";
+import { NetworkMessage, OutputMessage } from "./networkMessage";
 import { ServicePort } from "./server";
 
 enum ConnectionState {

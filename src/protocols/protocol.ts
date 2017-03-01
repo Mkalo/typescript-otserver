@@ -1,6 +1,6 @@
 import { Connection } from "../connection";
 import { XTEA } from "../xtea";
-import { NetworkMessage, OutputMessage } from "../networkmessage";
+import { NetworkMessage, OutputMessage } from "../networkMessage";
 import { g_rsa, g_config, g_game} from '../otserv';
 import { GameState } from '../enums';
 

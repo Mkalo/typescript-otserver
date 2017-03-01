@@ -1,7 +1,7 @@
 import { createServer, Server, Socket } from "net";
 import { Connection, ConnectionManager } from "./connection";
 import { Protocol } from "./protocols";
-import { NetworkMessage } from "./networkmessage"
+import { NetworkMessage } from "./networkMessage"
 
 abstract class ServiceBase {
 

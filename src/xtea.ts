@@ -1,5 +1,5 @@
 import { NumericType } from "./ctypes";
-import { NetworkMessage, OutputMessage } from "./networkmessage";
+import { NetworkMessage, OutputMessage } from "./networkMessage";
 
 export class XTEA {
 

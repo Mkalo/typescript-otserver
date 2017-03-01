@@ -1,5 +1,5 @@
 import { XTEA } from '../src/xtea';
-import { NetworkMessage, OutputMessage } from '../src/networkmessage';
+import { NetworkMessage, OutputMessage } from '../src/networkMessage';
 import * as assert from 'assert';
 
 describe('XTEA', () => {
