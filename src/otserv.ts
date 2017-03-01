@@ -7,9 +7,11 @@ import { ProtocolLogin } from "./protocol";
 import { Config } from "./config";
 import { OTBLoader } from './OTB-loader';
 import { OTBMLoader } from './OTBM-loader';
+import { Game } from './game';
 
 export const g_config: Config = new Config();
 export const g_rsa: RSA = RSA.getInstance();
+export const g_game: Game = new Game();
 const dataDirectory = path.join(__dirname, '..', '..', 'data');
     
 export class Otserv {
