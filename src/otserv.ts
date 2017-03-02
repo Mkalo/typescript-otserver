@@ -22,18 +22,30 @@ export class Otserv {
 
 	public start() {
 
-		let uri = 'mongodb://localhost/ots';
-		mongoose.connect(uri, err => {
+		mongoose.connect(g_config.db.host, g_config.db, err => {
 			if (err) throw Error(err);
 			console.log('Connected to MongoDb');
 
-			// const acc = new models.Account({
-			// 	login: "tomek",
-			// 	password: "123",
+			// new models.Account({
+			// 	login: "11",
+			// 	password: "11",
 			// 	email: "dsdadasd@op.pl"
-			// });
+			// }).save().then((account) => {
+			// 	const accountId = account._id;
+			// 	new models.Player({
+			// 		account: accountId,
+			// 		name: "Elderapo"
+			// 	}).save().then((player) => {
+			// 		account.players.push(player);
+			// 		account.save();
+			// 	}).catch((err) => {
+			// 		console.log(err);
+			// 	});
 
-			// acc.save();
+
+			// }).catch((err) => {
+			// 	console.log(err);
+			// })
 
 			const serviceManager: ServerManager = new ServerManager();
 			serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
