@@ -1,7 +1,7 @@
-import { createServer, Server, Socket } from "net";
+import { createServer, Server as TCPServer, Socket } from "net";
 import { Protocol } from "./protocols";
 import { NetworkMessage, OutputMessage } from "./networkMessage";
-import { ServicePort } from "./server";
+import { ServerPort } from "./server";
 
 enum ConnectionState {
 	Open,
@@ -21,7 +21,7 @@ export class ConnectionManager {
 		return this.instance;
 	}
 
-	public createConnection(server: Server, servicePort: ServicePort): Connection {
+	public createConnection(server: TCPServer, servicePort: ServerPort): Connection {
 		const connection: Connection = new Connection(server, servicePort);
 		this.connections.push(connection);
 		return connection;
@@ -55,12 +55,12 @@ export class Connection {
 	private protocol: Protocol;
 	private socket: Socket;
 
-	private server: Server;
+	private server: TCPServer;
 
 	private messageQueue: OutputMessage[];
-	private servicePort: ServicePort;
+	private servicePort: ServerPort;
 
-	constructor(server: Server, servicePort: ServicePort) {
+	constructor(server: TCPServer, servicePort: ServerPort) {
 		this.connectionState = ConnectionState.Open;
 		this.servicePort = servicePort;
 		this.server = server;

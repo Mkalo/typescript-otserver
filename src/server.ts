@@ -1,9 +1,9 @@
-import { createServer, Server, Socket } from "net";
+import { createServer, Server as TCPServer, Socket } from "net";
 import { Connection, ConnectionManager } from "./connection";
 import { Protocol } from "./protocols";
 import { NetworkMessage } from "./networkMessage"
 
-abstract class ServiceBase {
+abstract class ServerBase {
 
     public abstract isSingleSocket(): boolean;
     public abstract isChecksummed(): boolean;
@@ -14,7 +14,7 @@ abstract class ServiceBase {
 
 }
 
-export class Service<ProtocolType extends Protocol> extends ServiceBase {
+export class Server<ProtocolType extends Protocol> extends ServerBase {
     
 	private protocolType: any;
 
@@ -45,10 +45,10 @@ export class Service<ProtocolType extends Protocol> extends ServiceBase {
 
 }
 
-export class ServicePort {
+export class ServerPort {
 	
-    private services: ServiceBase[];
-    protected ioserver: Server;
+    private services: ServerBase[];
+    protected ioserver: TCPServer;
     private portOpen: boolean = false;
     private servicePort: number;
 
@@ -87,7 +87,7 @@ export class ServicePort {
             return;
         }
         
-        const serviceFront: ServiceBase = this.services[0];
+        const serviceFront: ServerBase = this.services[0];
         if (serviceFront.isSingleSocket()) {
             connection.accept(serviceFront.makeProtocol(connection));
         } else {
@@ -125,7 +125,7 @@ export class ServicePort {
         return ret;
     }
 
-    public addService(service: ServiceBase): boolean {
+    public addService(service: ServerBase): boolean {
         if (this.isSingleSocket()) return false;
 
         this.services.push(service);
@@ -146,13 +146,13 @@ export class ServicePort {
     }
 }
 
-export class ServiceManager {
+export class ServerManager {
     
-    private acceptors: Map<number, ServicePort>;
+    private acceptors: Map<number, ServerPort>;
     private running: boolean = false;
 
     public constructor() {
-        this.acceptors = new Map<number, ServicePort>();
+        this.acceptors = new Map<number, ServerPort>();
     }
 
     public run(): void {
@@ -183,7 +183,7 @@ export class ServiceManager {
             return false;
         }
 
-        let servicePort: ServicePort;
+        let servicePort: ServerPort;
         if (this.acceptors.has(port)) {
             servicePort = this.acceptors.get(port);
             if (servicePort.isSingleSocket() || protocolType.serverSendsFirst) {
@@ -191,11 +191,11 @@ export class ServiceManager {
                 return false;
             }
         } else {
-            servicePort = new ServicePort();
+            servicePort = new ServerPort();
             servicePort.open(port);
             this.acceptors.set(port, servicePort);
         }
 
-        return servicePort.addService(new Service<ProtocolType>(protocolType));
+        return servicePort.addService(new Server<ProtocolType>(protocolType));
     }
 }

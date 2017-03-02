@@ -2,7 +2,7 @@ import * as path from 'path';
 import { RSA } from './rsa';
 import { XTEA } from "./xtea";
 import { NetworkMessage } from "./networkMessage";
-import { ServiceManager } from "./server";
+import { ServerManager } from "./server";
 import { ProtocolLogin, ProtocolGame } from "./protocols";
 import { Config } from "./config";
 import { OTBLoader } from './OTBLoader';
@@ -28,7 +28,7 @@ export class Otserv {
 		// const otbmLoader = new OTBMLoader();
 		// otbmLoader.load(mapFileName);
 
-        const serviceManager: ServiceManager = new ServiceManager();
+        const serviceManager: ServerManager = new ServerManager();
         serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
 		serviceManager.addService<ProtocolGame>(ProtocolGame, g_config.worlds[0].port);
         serviceManager.run();
