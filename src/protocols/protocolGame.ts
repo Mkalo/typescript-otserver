@@ -4,6 +4,7 @@ import { g_rsa, g_config, g_game } from '../otserv';
 import { GameState } from '../enums';
 import { Protocol } from './protocol';
 import * as crypto from 'crypto';
+import { AuthService, IPService } from '../services';
 
 class GameClientInfo {
 	public operatingSystem: number;
@@ -34,7 +35,7 @@ export class ProtocolGame extends Protocol {
 		this.clientInfo = new GameClientInfo();
 	}
 
-	private disconnectClient(text: string):void {
+	private disconnectClient(text: string): void {
 		const output = new OutputMessage();
 		output.addByte(0x14);
 		output.addString(text);
@@ -78,43 +79,63 @@ export class ProtocolGame extends Protocol {
 		const xtea: XTEA = new XTEA(key);
 		this.enableXTEAEncryption(key);
 
-		this.clientInfo.gmFlag = msg.readUInt8();
+		const connectionIP = this.connection.getIp();
+		IPService.isBanned(connectionIP, (err) => {
+			if (err) return this.disconnectClient(err);
 
-		const sessionKey = msg.readString();
-		const sessionArgs = sessionKey.split('\n');
-		
-		if (sessionArgs.length !== 4) {
-			return this.disconnect();
-		}
+			this.clientInfo.gmFlag = msg.readUInt8();
 
-		const login = sessionArgs[0];
-		const password = sessionArgs[1];
-		const token = sessionArgs[2];
-		const tokenTime = sessionArgs[3];
-		
-		const characterName = msg.readString();
+			const sessionKey = msg.readString();
+			const sessionArgs = sessionKey.split('\n');
 
-		const timeStamp = msg.readUInt32();
-		const randomByte = msg.readUInt8();
+			if (sessionArgs.length !== 4) {
+				return this.disconnect();
+			}
 
-		if (this.challengeTimestamp !== timeStamp || this.challengeRandom !== randomByte) {
-			return this.disconnect();
-		}
+			const accountName = sessionArgs[0];
+			const password = sessionArgs[1];
+			const token = sessionArgs[2];
+			const tokenTime = parseInt(sessionArgs[3]);
 
-		if (this.clientInfo.version < g_game.minClientVersion || this.clientInfo.version > g_game.maxClientVersion) {
-			return this.disconnectClient(`Only clients with protocol ${g_game.clientVersionString} allowed!`);
-		}
+			const characterName = msg.readString();
 
-		if (g_game.getState() == GameState.Startup) {
-			return this.disconnectClient("Gameworld is starting up. Please wait.");
-		}
+			const timeStamp = msg.readUInt32();
+			const randomByte = msg.readUInt8();
 
-		if (g_game.getState() == GameState.Maintain) {
-			return this.disconnectClient("Gameworld is under maintenance. Please re-connect in a while.");
-		}
+			if (this.challengeTimestamp !== timeStamp || this.challengeRandom !== randomByte) {
+				return this.disconnect();
+			}
 
+			if (this.clientInfo.version < g_game.minClientVersion || this.clientInfo.version > g_game.maxClientVersion) {
+				return this.disconnectClient(`Only clients with protocol ${g_game.clientVersionString} allowed!`);
+			}
 
-		return;
+			if (g_game.getState() == GameState.Startup) {
+				return this.disconnectClient("Gameworld is starting up. Please wait.");
+			}
+
+			if (g_game.getState() == GameState.Maintain) {
+				return this.disconnectClient("Gameworld is under maintenance. Please re-connect in a while.");
+			}
+
+			this.login(accountName, password, characterName, token, tokenTime);
+		});
+	}
+
+	private login(accountName: string , password: string, characterName: string, token: string, tokenTime: number) {
+		AuthService.getCharactersList(accountName, password, token, (err, charactersListInfo) => {
+			if (err) return this.disconnectClient(err);
+
+			const characters = charactersListInfo.characters;
+			const avaiableCharacterNames = characters.map((character) => character.name);
+			const characterIndex = avaiableCharacterNames.indexOf(characterName);
+
+			if (characterIndex === -1) {
+				return this.disconnectClient(`Character ${characterName} doesn't exist.`);
+			}
+
+			return this.disconnectClient("To do BibleThump.");
+		});
 	}
 
 }
