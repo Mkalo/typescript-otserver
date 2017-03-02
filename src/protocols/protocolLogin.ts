@@ -157,8 +157,8 @@ export class ProtocolLogin extends Protocol {
 			output.addByte(1);
 			output.addUInt32(0);
 		} else {
-			output.addByte(premiumInfo.days);
-			output.addUInt32(premiumInfo.timeStamp); // premiumdays
+			output.addByte(premiumInfo.isPremium);
+			output.addUInt32(premiumInfo.timeStamp);
 		}
 	}
 

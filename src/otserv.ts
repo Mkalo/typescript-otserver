@@ -9,6 +9,10 @@ import { OTBLoader } from './OTBLoader';
 import { OTBMLoader } from './OTBMLoader';
 import { Game } from './game';
 
+import * as mongoose from 'mongoose';
+import * as bluebird from 'bluebird';
+mongoose.Promise = bluebird;
+import * as models from './models';
 
 export const g_config: Config = new Config();
 export const g_rsa: RSA = RSA.getInstance();
@@ -18,20 +22,25 @@ const dataDirectory = path.join(__dirname, '..', '..', 'data');
 export class Otserv {
 
 	public start() {
-		// console.log("Loading items...");
-		// const itemsFileName = path.join(dataDirectory, g_config.world.itemsFileName);
-		// const otbLoader = new OTBLoader();
-		// otbLoader.loadItems(itemsFileName);
 
-		// console.log("Loading map...");
-		// const mapFileName = path.join(dataDirectory, g_config.world.mapFileName);
-		// const otbmLoader = new OTBMLoader();
-		// otbmLoader.load(mapFileName);
+		let uri = 'mongodb://localhost/ots';
+		mongoose.connect(uri, err => {
+			if (err) throw Error(err);
+			console.log('Connected to MongoDb');
 
-        const serviceManager: ServerManager = new ServerManager();
-        serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
-		serviceManager.addService<ProtocolGame>(ProtocolGame, g_config.worlds[0].port);
-        serviceManager.run();
+			// const acc = new models.Account({
+			// 	login: "tomek",
+			// 	password: "123",
+			// 	email: "dsdadasd@op.pl"
+			// });
+
+			// acc.save();
+
+			const serviceManager: ServerManager = new ServerManager();
+			serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
+			serviceManager.addService<ProtocolGame>(ProtocolGame, g_config.worlds[0].port);
+			serviceManager.run();
+		});
 	}
 
 }
