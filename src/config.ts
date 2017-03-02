@@ -8,7 +8,7 @@ class DBConfig {
 	public dbName: string = '';
 
 	public generateURI(): string {
-		let credintials = this.user ? `${this.user}:${this.password}@` : '';
+		const credintials = this.user ? `${this.user}:${this.password}@` : '';
 		return `mongodb://${credintials}${this.host}:${this.port}/${this.dbName}`;
 	}
 }
