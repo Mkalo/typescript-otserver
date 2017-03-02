@@ -5,59 +5,50 @@ import * as moment from 'moment';
 export class AuthService {
 
 	public static getCharactersList(accountName: string, password: string, authToken: string, done: Function) {
-		const worlds = g_config.worlds;
+		AuthService.getAccountInfo(accountName, password, authToken, (err, accountInfo) => {
+			if (err) return done(err);
 
+			const worlds = g_config.worlds;
+
+			models.Player
+				.find({
+					account: accountInfo._id
+				})
+				.select('name worldId -_id')
+				.exec((err, characters) => {
+					if (err) return done("Couldn't get characters list.");
+
+					const secondsLeft = moment(accountInfo.premiumEnd).diff(moment(), 'seconds', true);
+					const premium = {
+						isPremium: secondsLeft ? 1 : 0,
+						timeStamp: (new Date().getTime() / 1000) + secondsLeft
+					};
+
+					return done(null, {
+						worlds,
+						characters,
+						premium
+					});
+				});
+		});
+	}
+
+	public static getAccountInfo(accountName: string, password: string, authToken: string, done: Function) {
 		const wrontCredintialsMessage = "Account name or password is not correct.";
 
-		models.Account.findOne({
-			login: accountName
-		}).then((account) => {
-			if (!account) {
-				return done(wrontCredintialsMessage);
-			}
+		models.Account
+			.findOne({
+				login: accountName
+			})
+			.exec((err, account) => {
+				if (err || !account) return done(wrontCredintialsMessage);
 
-			account.comparePassword(password, (err, validated) => {
-				if (err || !validated) return done(wrontCredintialsMessage);
+				account.comparePassword(password, (err, validated) => {
+					if (err || !validated) return done(wrontCredintialsMessage);
 
-				const characters = [
-					{
-						name: "Noob",
-						worldId: 0
-					},
-					{
-						name: "Odsadaa",
-						worldId: 0
-					},
-					{
-						name: "Fdfsdgd Fdd",
-						worldId: 0
-					},
-					{
-						name: "Lul",
-						worldId: 0
-					},
-					{
-						name: "Noob",
-						worldId: 0
-					}
-				];
-
-				const secondsLeft = moment(account.premiumEnd).diff(moment(), 'seconds', true);
-				const premium = {
-					isPremium: secondsLeft <= 0 ? 0 : 1,
-					timeStamp: (new Date().getTime() / 1000) + secondsLeft
-				};
-
-				return done(null, {
-					worlds,
-					characters,
-					premium
+					return done(null, account);
 				});
 			});
-		}).catch((err) => {
-			console.error(err);
-			return done("Somethign went wrong xD");
-		});
 	}
 
 }
