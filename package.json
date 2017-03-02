@@ -36,6 +36,7 @@
     "@types/node": "^7.0.5",
     "bignum": "^0.12.5",
     "deep-extend": "^0.4.1",
+    "ip": "^1.1.4",
     "node-rsa": "^0.4.2",
     "xml2json": "^0.11.0"
   }

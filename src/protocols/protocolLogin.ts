@@ -1,8 +1,9 @@
 import { XTEA } from "../xtea";
 import { NetworkMessage, OutputMessage } from "../networkMessage";
-import { g_rsa, g_config, g_game} from '../otserv';
+import { g_rsa, g_config, g_game } from '../otserv';
 import { GameState } from '../enums';
 import { Protocol } from './protocol';
+import { AuthService, IPService } from '../services';
 
 const CLIENT_VERSION_STR = "10"; // for now
 const CLIENT_VERSION_MIN = 1;
@@ -30,7 +31,6 @@ export class ProtocolLogin extends Protocol {
 	static readonly protocolIdentifier: number = 0x01;
 	static readonly protocolName: string = "login protocol";
 
-	public disconnectClient(text: string, version: number) {
 	private clientInfo: LoginClientInfo;
 
 	constructor(arg: any) {
@@ -39,6 +39,7 @@ export class ProtocolLogin extends Protocol {
 		this.clientInfo = new LoginClientInfo();
 	}
 
+	public disconnectClient(text: string) {
 		const output = new OutputMessage();
 		const version = this.clientInfo.version;
 
@@ -74,68 +75,43 @@ export class ProtocolLogin extends Protocol {
 
 		this.enableXTEAEncryption(key);
 
+		const connectionIP = this.connection.getIp();
+		IPService.isBanned(connectionIP, (err) => {
+			if (err) return this.disconnectClient(err);
 
-		const accountName = msg.readString();
-		if (accountName === "") {
-			return this.disconnectClient("Invalid account name.", version);
-		}
-
-		const password = msg.readString();
-		if (password === "") {
-			return this.disconnectClient("Invalid password.", version);
-		}
-
-		msg.setPosition(beforeRSA + 128);
-
-		msg.readUInt8(); // wtf is this?
-		msg.readUInt8(); // wtf is this?
-
-		const hardware1 = msg.readString();
-		const hardware2 = msg.readString();
-
-		let authToken = this.decryptRSA(msg) ? msg.readString() : "";
-
-		this.processLogin(accountName, password, authToken, version);
-	}
-
-	private getCharactersListInfo(accountName: string, password: string, authToken, done: Function): void {
-		const worlds = g_config.worlds;
-
-		// pull characters from DB when authorizing
-		const characters = [
-			{
-				name: "Noob",
-				worldId: 0
-			},
-			{
-				name: "Odsadaa",
-				worldId: 0
-			},
-			{
-				name: "Fdfsdgd Fdd",
-				worldId: 0
-			},
-			{
-				name: "Lul",
-				worldId: 0
-			},
-			{
-				name: "Noob",
-				worldId: 0
+			if (this.clientInfo.version < CLIENT_VERSION_MIN || this.clientInfo.version > CLIENT_VERSION_MAX) {
+				return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`);
 			}
-		];
+
+			if (g_game.getState() === GameState.Startup) {
+				return this.disconnectClient("Gameworld is starting up. Please wait.");
+			}
+
+			if (g_game.getState() === GameState.Maintain) {
+				return this.disconnectClient("Gameworld is under maintenance.\nPlease re-connect in a while.");
+			}
+
+			const accountName = msg.readString();
+			if (accountName === "") {
+				return this.disconnectClient("Invalid account name.");
+			}
+
+			const password = msg.readString();
+			if (password === "") {
+				return this.disconnectClient("Invalid password.");
+			}
+
+			msg.setPosition(beforeRSA + 128);
+
+			msg.readUInt8(); // wtf is this?
+			msg.readUInt8(); // wtf is this?
+
 			this.clientInfo.hardware1 = msg.readString();
 			this.clientInfo.hardware2 = msg.readString();
 
-		const premium = {
-			days: 0,
-			timeStamp: 0
-		};
+			let authToken = this.decryptRSA(msg) ? msg.readString() : "";
 
-		return done(null, {
-			worlds,
-			characters,
-			premium
+			this.processLogin(accountName, password, authToken);
 		});
 	}
 
@@ -186,12 +162,9 @@ export class ProtocolLogin extends Protocol {
 		}
 	}
 
-	private processLogin(accountName: string, password: string, authToken: string, version: number): void {
-		const connectionIP = this.connection.getIp();
-		// check ip
-
-		this.getCharactersListInfo(accountName, password, authToken, (err, info) => {
-			if (err) return this.disconnectClient(err, version);
+	private processLogin(accountName: string, password: string, authToken: string): void {
+		AuthService.getCharactersList(accountName, password, authToken, (err, info) => {
+			if (err) return this.disconnectClient(err);
 
 			const ticks = new Date().getTime() / AUTHENTICATOR_PERIOD;
 			const sessionKey = [accountName, password, authToken, ticks.toString()].join('\n');
