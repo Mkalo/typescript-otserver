@@ -22,7 +22,8 @@ export class Otserv {
 
 	public start() {
 
-		mongoose.connect(g_config.db.host, g_config.db, err => {
+		const uri = g_config.db.generateURI();
+		mongoose.connect(uri, err => {
 			if (err) throw Error(err);
 			console.log('Connected to MongoDb');
 
