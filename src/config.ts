@@ -1,12 +1,16 @@
 import * as deepExtend from 'deep-extend';
 
 class DBConfig {
-	public type: string = 'mysql';
 	public host: string = '127.0.0.1';
-	public port: number = 3306;
-	public user: string = 'root';
+	public port: number = 27017;
+	public user: string = '';
 	public password: string = '';
-	public dbName: string = 'some_ots';
+	public dbName: string = '';
+
+	public generateURI(): string {
+		let credintials = this.user ? `${this.user}:${this.password}@` : '';
+		return `mongodb://${credintials}${this.host}:${this.port}/${this.dbName}`;
+	}
 }
 
 class WorldConfig {

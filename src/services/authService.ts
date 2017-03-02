@@ -1,44 +1,54 @@
 import { g_config } from '../otserv';
+import * as models from '../models';
+import * as moment from 'moment';
 
 export class AuthService {
-	
+
 	public static getCharactersList(accountName: string, password: string, authToken: string, done: Function) {
-		const worlds = g_config.worlds;
+		AuthService.getAccountInfo(accountName, password, authToken, (err, accountInfo) => {
+			if (err) return done(err);
 
-		// pull characters from DB when authorizing
-		const characters = [
-			{
-				name: "Noob",
-				worldId: 0
-			},
-			{
-				name: "Odsadaa",
-				worldId: 0
-			},
-			{
-				name: "Fdfsdgd Fdd",
-				worldId: 0
-			},
-			{
-				name: "Lul",
-				worldId: 0
-			},
-			{
-				name: "Noob",
-				worldId: 0
-			}
-		];
+			const worlds = g_config.worlds;
 
-		const premium = {
-			days: 0,
-			timeStamp: 0
-		};
+			models.Player
+				.find({
+					account: accountInfo._id
+				})
+				.select('name worldId -_id')
+				.exec((err, characters) => {
+					if (err) return done("Couldn't get characters list.");
 
-		return done(null, {
-			worlds,
-			characters,
-			premium
+					const secondsLeft = moment(accountInfo.premiumEnd).diff(moment(), 'seconds', true);
+					const premium = {
+						isPremium: secondsLeft ? 1 : 0,
+						timeStamp: (new Date().getTime() / 1000) + secondsLeft
+					};
+
+					return done(null, {
+						worlds,
+						characters,
+						premium
+					});
+				});
 		});
+	}
+
+	public static getAccountInfo(accountName: string, password: string, authToken: string, done: Function) {
+		const wrontCredintialsMessage = "Account name or password is not correct.";
+
+		models.Account
+			.findOne({
+				login: accountName
+			})
+			.exec((err, account) => {
+				if (err || !account) return done(wrontCredintialsMessage);
+
+				account.comparePassword(password, (err, validated) => {
+					if (err || !validated) return done(wrontCredintialsMessage);
+
+					return done(null, account);
+				});
+			});
 	}
 
 }

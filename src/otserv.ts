@@ -9,6 +9,9 @@ import { OTBLoader } from './OTBLoader';
 import { OTBMLoader } from './OTBMLoader';
 import { Game } from './game';
 
+import * as mongoose from 'mongoose';
+mongoose.Promise = require('bluebird');
+import * as models from './models';
 
 export const g_config: Config = new Config();
 export const g_rsa: RSA = RSA.getInstance();
@@ -18,20 +21,38 @@ const dataDirectory = path.join(__dirname, '..', '..', 'data');
 export class Otserv {
 
 	public start() {
-		// console.log("Loading items...");
-		// const itemsFileName = path.join(dataDirectory, g_config.world.itemsFileName);
-		// const otbLoader = new OTBLoader();
-		// otbLoader.loadItems(itemsFileName);
 
-		// console.log("Loading map...");
-		// const mapFileName = path.join(dataDirectory, g_config.world.mapFileName);
-		// const otbmLoader = new OTBMLoader();
-		// otbmLoader.load(mapFileName);
+		const uri = g_config.db.generateURI();
+		mongoose.connect(uri, err => {
+			if (err) throw Error(err);
+			console.log('Connected to MongoDb');
 
-        const serviceManager: ServerManager = new ServerManager();
-        serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
-		serviceManager.addService<ProtocolGame>(ProtocolGame, g_config.worlds[0].port);
-        serviceManager.run();
+			// new models.Account({
+			// 	login: "11",
+			// 	password: "11",
+			// 	email: "dsdadasd@op.pl"
+			// }).save().then((account) => {
+			// 	const accountId = account._id;
+			// 	new models.Player({
+			// 		account: accountId,
+			// 		name: "Elderapo"
+			// 	}).save().then((player) => {
+			// 		account.players.push(player);
+			// 		account.save();
+			// 	}).catch((err) => {
+			// 		console.log(err);
+			// 	});
+
+
+			// }).catch((err) => {
+			// 	console.log(err);
+			// })
+
+			const serviceManager: ServerManager = new ServerManager();
+			serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
+			serviceManager.addService<ProtocolGame>(ProtocolGame, g_config.worlds[0].port);
+			serviceManager.run();
+		});
 	}
 
 }
