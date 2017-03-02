@@ -5,6 +5,15 @@ import { GameState } from '../enums';
 import { Protocol } from './protocol';
 import * as crypto from 'crypto';
 
+class GameClientInfo {
+	public operatingSystem: number;
+	public version: number;
+	public clientVersion: number;
+	public clientType: number;
+	public datRevision: number;
+	public gmFlag: number;
+}
+
 export class ProtocolGame extends Protocol {
 
 	static readonly useChecksum: boolean = true;
@@ -14,6 +23,7 @@ export class ProtocolGame extends Protocol {
 
 	private challengeTimestamp: number;
 	private challengeRandom: number;
+	private clientInfo: GameClientInfo;
 
 	constructor(arg: any) {
 		super(arg);
@@ -21,6 +31,7 @@ export class ProtocolGame extends Protocol {
 		const randomBytes = crypto.randomBytes(5);
 		this.challengeRandom = randomBytes.readUInt8(0);
 		this.challengeTimestamp = randomBytes.readUInt32BE(1);
+		this.clientInfo = new GameClientInfo();
 	}
 
 	private disconnectClient(text: string):void {
@@ -47,12 +58,12 @@ export class ProtocolGame extends Protocol {
 			return this.disconnect();
 		}
 
-		const operatingSystem = msg.readUInt16();
-		const version = msg.readUInt16();
+		this.clientInfo.operatingSystem = msg.readUInt16();
+		this.clientInfo.version = msg.readUInt16();
 
-		const clientVersion = msg.readUInt32();
-		const clientType = msg.readUInt8();
-		const datRevision = msg.readUInt16();
+		this.clientInfo.clientVersion = msg.readUInt32();
+		this.clientInfo.clientType = msg.readUInt8();
+		this.clientInfo.datRevision = msg.readUInt16();
 
 		if (!this.decryptRSA(msg)) {
 			return this.disconnect();
@@ -67,7 +78,7 @@ export class ProtocolGame extends Protocol {
 		const xtea: XTEA = new XTEA(key);
 		this.enableXTEAEncryption(key);
 
-		const gmFlag = msg.readUInt8();
+		this.clientInfo.gmFlag = msg.readUInt8();
 
 		const sessionKey = msg.readString();
 		const sessionArgs = sessionKey.split('\n');
@@ -90,7 +101,7 @@ export class ProtocolGame extends Protocol {
 			return this.disconnect();
 		}
 
-		if (version < g_game.minClientVersion || version > g_game.maxClientVersion) {
+		if (this.clientInfo.version < g_game.minClientVersion || this.clientInfo.version > g_game.maxClientVersion) {
 			return this.disconnectClient(`Only clients with protocol ${g_game.clientVersionString} allowed!`);
 		}
 
