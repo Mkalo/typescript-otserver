@@ -11,6 +11,18 @@ const CLIENT_VERSION_MAX = 10000;
 const AUTHENTICATOR_DIGITS = 6;
 const AUTHENTICATOR_PERIOD = 30;
 
+class LoginClientInfo {
+	public operatingSystem: number;
+	public version: number;
+	public protocolVersion: number;
+	public datSignature: number;
+	public sprSignature: number;
+	public picSignature: number;
+
+	public hardware1: string;
+	public hardware2: string;
+}
+
 export class ProtocolLogin extends Protocol {
 
 	static readonly useChecksum: boolean = true;
@@ -19,7 +31,16 @@ export class ProtocolLogin extends Protocol {
 	static readonly protocolName: string = "login protocol";
 
 	public disconnectClient(text: string, version: number) {
+	private clientInfo: LoginClientInfo;
+
+	constructor(arg: any) {
+		super(arg);
+
+		this.clientInfo = new LoginClientInfo();
+	}
+
 		const output = new OutputMessage();
+		const version = this.clientInfo.version;
 
 		output.addByte(version >= 1076 ? 0x0B : 0x0A);
 		output.addString(text);
@@ -29,12 +50,12 @@ export class ProtocolLogin extends Protocol {
 	}
 
 	public onRecvFirstMessage(msg: NetworkMessage): void {
-		const operatingSytem = msg.readUInt16();
-		const version = msg.readUInt16();
-		const protocolVersion = msg.readUInt32();
-		const datSignature = msg.readUInt32();
-		const sprSignature = msg.readUInt32();
-		const picSignature = msg.readUInt32();
+		this.clientInfo.operatingSystem = msg.readUInt16();
+		this.clientInfo.version = msg.readUInt16();
+		this.clientInfo.protocolVersion = msg.readUInt32();
+		this.clientInfo.datSignature = msg.readUInt32();
+		this.clientInfo.sprSignature = msg.readUInt32();
+		this.clientInfo.picSignature = msg.readUInt32();
 
 		msg.skipBytes(1); // 0 byte idk what it is
 
@@ -53,17 +74,6 @@ export class ProtocolLogin extends Protocol {
 
 		this.enableXTEAEncryption(key);
 
-		if (version < CLIENT_VERSION_MIN || version > CLIENT_VERSION_MAX) {
-			return this.disconnectClient(`Only clients with protocol ${CLIENT_VERSION_STR} allowed!`, version);
-		}
-
-		if (g_game.getState() === GameState.Startup) {
-			return this.disconnectClient("Gameworld is starting up. Please wait.", version);
-		}
-
-		if (g_game.getState() === GameState.Maintain) {
-			return this.disconnectClient("Gameworld is under maintenance.\nPlease re-connect in a while.", version);
-		}
 
 		const accountName = msg.readString();
 		if (accountName === "") {
@@ -114,6 +124,8 @@ export class ProtocolLogin extends Protocol {
 				worldId: 0
 			}
 		];
+			this.clientInfo.hardware1 = msg.readString();
+			this.clientInfo.hardware2 = msg.readString();
 
 		const premium = {
 			days: 0,
