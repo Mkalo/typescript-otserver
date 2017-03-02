@@ -5,9 +5,6 @@ import { GameState } from '../enums';
 import { Protocol } from './protocol';
 import * as crypto from 'crypto';
 
-const AUTHENTICATOR_DIGITS = 6;
-const AUTHENTICATOR_PERIOD = 30;
-
 export class ProtocolGame extends Protocol {
 
 	static readonly useChecksum: boolean = true;
