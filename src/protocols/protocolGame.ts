@@ -5,10 +5,6 @@ import { GameState } from '../enums';
 import { Protocol } from './protocol';
 import * as crypto from 'crypto';
 
-const CLIENT_VERSION_STR = "10"; // for now
-const CLIENT_VERSION_MIN = 1;
-const CLIENT_VERSION_MAX = 10000;
-
 const AUTHENTICATOR_DIGITS = 6;
 const AUTHENTICATOR_PERIOD = 30;
 
