@@ -5,6 +5,7 @@ import { GameState } from '../enums';
 import { Protocol } from './protocol';
 import * as crypto from 'crypto';
 import { AuthService, IPService } from '../services';
+import { Player } from '../objects';
 
 class GameClientInfo {
 	public operatingSystem: number;
@@ -134,11 +135,10 @@ export class ProtocolGame extends Protocol {
 				return this.disconnectClient(`Character ${characterName} doesn't exist.`);
 			}
 
-			g_game.getPlayer(characterName, (err, player) => {
+			g_game.getPlayer(characterName, (err, player: Player) => {
 				if (err) return this.disconnectClient(err);
 
-				console.log(player);
-				return this.disconnectClient("aaa");
+				return this.disconnectClient("Hello " + player.name);
 			});
 		});
 	}

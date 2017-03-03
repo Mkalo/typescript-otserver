@@ -1,14 +1,7 @@
 import { GameState } from './enums';
 import { PlayerService } from './services';
 import * as deepExtend from 'deep-extend';
-
-class Player {
-	public name: String;
-
-	constructor(obj: any) {
-		deepExtend(this, obj);
-	}
-}
+import { Player } from './objects';
 
 export class Game {
 
@@ -36,10 +29,9 @@ export class Game {
 				return done(null, player);
 		}
 
-		PlayerService.getPlayerData(name, (err, playerData) => {
+		PlayerService.getPlayerData(name, (err, player) => {
 			if (err) return done(err);
 
-			const player = new Player(playerData);
 			this.players.push(player);
 			return done(null, player);
 		});
