@@ -491,14 +491,27 @@ export enum WarIcon {
 	Red = 3
 };
 
-export enum Gender {
+export enum Skill {
+	None,
+	Club,
+	Sword,
+	Axe,
+	Distance,
+	Magic
+};
+
+export enum Sex {
 	Male,
 	Female
 };
 
 // TODO: dynamic?
 export enum Vocation {
-	None
+	None,
+	Sorcerer,
+	Knight,
+	Palladin,
+	Druid
 };
 
 export enum FightMode {
