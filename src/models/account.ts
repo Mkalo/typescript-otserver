@@ -40,8 +40,7 @@ export const AccountSchema = new mongoose.Schema({
 	creationDate: {
 		type: Date,
 		default: Date.now
-	},
-	players : [{ type: mongoose.Schema.Types.ObjectId, ref: 'Player' }]
+	}
 });
 
 AccountSchema.pre('save', function(next) {
