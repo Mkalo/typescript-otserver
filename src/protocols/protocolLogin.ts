@@ -143,8 +143,9 @@ export class ProtocolLogin extends Protocol {
 			output.addByte(world.isPreview || 0);
 		}
 
-		output.addByte(characters.length);
-		for (let i = 0; i < characters.length; i++) {
+		const charactersLength = Math.min(characters.length, 20); // max 20 characters?
+		output.addByte(charactersLength);
+		for (let i = 0; i < charactersLength; i++) {
 			const character = characters[i];
 			output.addByte(character.worldId);
 			output.addString(character.name);
