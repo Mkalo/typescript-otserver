@@ -9,8 +9,9 @@ import { OTBLoader } from './OTBLoader';
 import { OTBMLoader } from './OTBMLoader';
 import { Game } from './game';
 
+import * as bluebird from 'bluebird';
 import * as mongoose from 'mongoose';
-mongoose.Promise = require('bluebird');
+mongoose.Promise = bluebird;
 import * as models from './models';
 
 export const g_config: Config = new Config();

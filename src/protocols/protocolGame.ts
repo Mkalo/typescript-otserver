@@ -134,7 +134,12 @@ export class ProtocolGame extends Protocol {
 				return this.disconnectClient(`Character ${characterName} doesn't exist.`);
 			}
 
-			return this.disconnectClient("To do BibleThump.");
+			g_game.getPlayer(characterName, (err, player) => {
+				if (err) return this.disconnectClient(err);
+
+				console.log(player);
+				return this.disconnectClient("aaa");
+			});
 		});
 	}
 
