@@ -33,20 +33,20 @@ export class Otserv {
 			// 	email: "dsdadasd@op.pl"
 			// }).save().then((account) => {
 			// 	const accountId = account._id;
-			// 	new models.Player({
-			// 		account: accountId,
-			// 		name: "Elderapo"
-			// 	}).save().then((player) => {
-			// 		account.players.push(player);
-			// 		account.save();
-			// 	}).catch((err) => {
-			// 		console.log(err);
-			// 	});
 
+			// 	for (let i = 0; i < 500; i++) { // 500 is way to much but just for tests
+			// 		new models.Player({
+			// 			account: accountId,
+			// 			name: "Elderapo" + i
+			// 		}).save().then((player) => {
 
+			// 		}).catch((err) => {
+			// 			console.log(err);
+			// 		});
+			// 	}
 			// }).catch((err) => {
 			// 	console.log(err);
-			// })
+			// });
 
 			const serviceManager: ServerManager = new ServerManager();
 			serviceManager.addService<ProtocolLogin>(ProtocolLogin, g_config.loginServer.port);
