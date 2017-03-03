@@ -4,9 +4,12 @@ export class Position {
 	private y: number;
 	private z: number;
 
+	constructor(a? :any);
 	constructor(position: Position);
 	constructor(x: number, y: number, z: number);
-	constructor(p1: any, p2?: any, p3?: any) {
+	constructor(p1?: any, p2?: any, p3?: any) {
+		if (typeof p1 === "undefined")
+			return this.constructor2(0, 0, 0);
 		if (p1 instanceof Position)
 			return this.constructor1(p1);
 

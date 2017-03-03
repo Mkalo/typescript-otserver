@@ -1,4 +1,4 @@
-import { Position } from './position';
+import { Position } from './objects/position';
 import { Item } from './item';
 
 export class Town {
