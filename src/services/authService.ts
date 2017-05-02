@@ -14,6 +14,7 @@ export class AuthService {
 				.find({
 					account: accountInfo._id
 				})
+				.limit(20)
 				.select('name worldId -_id')
 				.exec((err, characters) => {
 					if (err) return done("Couldn't get characters list.");
