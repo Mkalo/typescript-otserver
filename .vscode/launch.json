@@ -1,13 +1,16 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "type": "node2",
+            "type": "node",
             "request": "launch",
             "name": "Launch Program",
             "preLaunchTask": "tsc-watch",
             "program": "${workspaceRoot}/bin/src/index.js",
-            "cwd": "${workspaceRoot}"
+            "cwd": "${workspaceRoot}",
+            "sourceMaps": true,
+            "outFiles": ["${workspaceRoot}/bin/**/*.js"]
         },
         {
             "type": "node",
