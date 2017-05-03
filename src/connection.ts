@@ -78,7 +78,7 @@ export class Connection {
 	}
 
 	public getIp(): string {
-		if (this.hasValidSocket) {
+		if (this.hasValidSocket()) {
 			return this.socket.address().address;
 		}
 		
