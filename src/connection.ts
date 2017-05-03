@@ -128,6 +128,9 @@ export class Connection {
 	}
 
 	public accept(protocolType?: Protocol): void {
+		this.socket.on('error', (err) => {
+			console.error(err);
+		});
 		if (!protocolType) {
 			this.socket.on("data", (buffer) => {
 				const msg = new NetworkMessage(buffer);
