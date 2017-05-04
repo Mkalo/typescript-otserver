@@ -74,6 +74,7 @@ export class Connection {
 	public setSocket(socket: Socket): void {
 		if (!this.hasValidSocket()) {
 			this.socket = socket;
+			this.socket.setMaxListeners(0);
 		}
 	}
 
