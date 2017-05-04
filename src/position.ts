@@ -1,8 +1,8 @@
 export class Position {
 
-	private x: number;
-	private y: number;
-	private z: number;
+	public x: number;
+	public y: number;
+	public z: number;
 
 	constructor(position: Position);
 	constructor(x: number, y: number, z: number);
