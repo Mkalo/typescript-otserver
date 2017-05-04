@@ -33,8 +33,8 @@ export abstract class Protocol {
 	}
 
 	public onRecvMessage(msg: NetworkMessage): void {
-		if (this.isXTEAEncryptionEnabled && !this.xteaKey.decrypt(msg)) {
-			return
+		if (this.isXTEAEncryptionEnabled() && !this.xteaKey.decrypt(msg)) {
+			return;
 		}
 
 		return this.parsePacket(msg);
