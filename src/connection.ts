@@ -129,9 +129,11 @@ export class Connection {
 	}
 
 	public accept(protocolType?: Protocol): void {
-		this.socket.on('error', (err) => {
-			console.error(err);
+		// so server doesn't crash when client connection gets closed because of client crash
+		this.socket.on('error', err => {
+			this.close();
 		});
+
 		if (!protocolType) {
 			this.socket.on("data", (buffer) => {
 				const msg = new NetworkMessage(buffer);
