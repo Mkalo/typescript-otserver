@@ -115,6 +115,8 @@ export class ProtocolLogin extends Protocol {
 		});
 	}
 
+	public parsePacket(msg: NetworkMessage): void {	}
+
 	private addWorldMotd(output: OutputMessage, motd?: string) {
 		if (motd) {
 			output.addByte(0x14);
