@@ -41,8 +41,8 @@ export class XTEA {
 	}
 
 	public decrypt(msg: NetworkMessage): boolean {
-		if ((msg.getLength() - msg.getPosition()) % 8 !== 0)
-			return false;
+		// if ((msg.getLength() - msg.getPosition()) % 8 !== 0)
+		// 	return false;
 
 		const buffer: Buffer = msg.getBuffer();
 		const messageLength: number = buffer.length;
