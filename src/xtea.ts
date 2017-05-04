@@ -41,13 +41,12 @@ export class XTEA {
 	}
 
 	public decrypt(msg: NetworkMessage): boolean {
-		if ((msg.getPosition() & 7) != 0) {
+		if ((msg.getLength() - msg.getPosition()) % 8 !== 0)
 			return false;
-		}
 
 		const buffer: Buffer = msg.getBuffer();
-		const messageLength: number = msg.getPosition();
-		let readPos: number = 0;
+		const messageLength: number = buffer.length;
+		let readPos: number = msg.getPosition();
 		while (readPos < messageLength) {
 			let v0: number = buffer.readUInt32LE(readPos);
 			let v1: number = buffer.readUInt32LE(readPos + 4);
@@ -66,6 +65,8 @@ export class XTEA {
 			buffer.writeUInt32LE(v1, readPos + 4);
 			readPos += 8;
 		}
+
+		return true;
 	}
     
 }
