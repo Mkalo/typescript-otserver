@@ -175,10 +175,6 @@ export class ProtocolGame extends Protocol {
 			}
 		}
 
-		// if (recvbyte === 0x14) {
-		// 	return this.logout(true, false);
-		// }
-
 		switch (recvbyte) {
 			case 0x14: this.logout(true, false); break;
 			case 0x1D: this.receivePingBack(); break;
