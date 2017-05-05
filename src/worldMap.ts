@@ -1,9 +1,18 @@
+import { TileFlag, CylinderFlag, ReturnValue } from './enums';
 import { Position } from './Position';
 import { Creature } from './Creature';
 import { Item } from './item';
+import { Tile } from './Tile';
 import { OTBMLoader } from './OTBMLoader';
+import * as deepExtend from 'deep-extend';
+import * as shuffleArray from 'shuffle-array';
 
 export const MAP_MAX_LAYERS = 16;
+
+export const FLOOR_BITS = 3;
+export const FLOOR_SIZE = (1 << FLOOR_BITS);
+export const FLOOR_MASK = (FLOOR_SIZE - 1);
+
 
 export class Town {
 
@@ -19,7 +28,6 @@ export class Town {
 
 }
 
-
 export class Towns {
 
 	private towns: Town[];
@@ -34,39 +42,145 @@ export class Towns {
 
 }
 
-export class Tile {
-
-	public isProtectionZone: boolean = false;
-	public isNoPvpZone: boolean = false;
-	public isPvpZone: boolean = false;
-	public isNoLogoutZone: boolean = false;
-	public isRefreshZone: boolean = false;
-	public houseID: number;
-	public ground: Item;
-
-	private position: Position;
-
-	public addItem(item: Item) {
-		// check if item is ground
-	}
-
-	public setPosition(position: Position): void {
-		this.position = position;
-	}
-
-	public getPosition(): Position {
-		return this.position;
-	}
-
-}
-
 class Houses { }
 class Spawns { }
 class SpectatorVec { }
 class Direction { }
 class FrozenPathingConditionCall { }
 class FindPathParams { }
-class QTreeLeafNode { }
+
+
+class Floor {
+	public tiles: Tile[][] = [];
+
+	constructor() {
+		// finish 2 dimensional array init
+	}
+}
+
+class Thing {
+
+}
+
+class Cylinder {
+	public internalAddThing(thing: Thing) {
+
+	}
+
+	public getPosition(): Position {
+		return null;
+	}
+}
+
+class LeafTemplate {
+	public child;
+	public isLeaf: boolean;
+}
+
+class QTreeNode {
+	public isLeaf: boolean = false;
+	public child: QTreeNode[] = [];
+
+	public getLeafStatic<T extends LeafTemplate>(node: T, x: number, y: number): T { // WTF is that???
+		do {
+			node = node.child[((x & 0x8000) >> 15) | ((y & 0x8000) >> 14)];
+			if (!node) {
+				return null;
+			}
+
+			x <<= 1;
+			y <<= 1;
+		} while (!node.isLeaf);
+		return node;
+	}
+
+	public getLeaf(x: number, y: number): QTreeLeafNode {
+		if (this.isLeaf) {
+			return QTreeLeafNode.cast(this); // DUNNO IF THIS WORKS
+		}
+
+		const node = this.child[((x & 0x8000) >> 15) | ((y & 0x8000) >> 14)];
+		if (!node) {
+			return null;
+		}
+		return node.getLeaf(x << 1, y << 1);
+	}
+
+	public createLeaf(x: number, y: number, level: number): QTreeLeafNode {
+		if (!this.isLeaf) {
+			const index = ((x & 0x8000) >> 15) | ((y & 0x8000) >> 14);
+			if (!this.child[index]) {
+				if (level != FLOOR_BITS) {
+					this.child[index] = new QTreeNode();
+				} else {
+					this.child[index] = new QTreeLeafNode();
+					QTreeLeafNode.newLeaf = true;
+				}
+			}
+			return this.child[index].createLeaf(x * 2, y * 2, level - 1);
+		}
+		return QTreeLeafNode.cast(this); // no idea if this works
+	}
+}
+
+class QTreeLeafNode extends QTreeNode {
+	static newLeaf: boolean = true;;
+
+	public leafS: QTreeLeafNode = null;
+	public leafE: QTreeLeafNode = null;
+	public floors: Floor[] = [];
+	public creatureList: Creature[] = [];
+	public playerList: Creature[] = [];
+
+	static cast<T>(obj: T): QTreeLeafNode { // NO IDEA IF THIS WORKS
+		const _new = new QTreeLeafNode();
+		deepExtend(_new, obj);
+		return _new;
+	}
+
+	public constructor() {
+		super();
+		QTreeLeafNode.newLeaf = true;
+	}
+	// 	~QTreeLeafNode();
+
+	// 	// non-copyable
+	// 	QTreeLeafNode(const QTreeLeafNode&) = delete;
+	// 	QTreeLeafNode& operator=(const QTreeLeafNode&) = delete;
+
+	public createFloor(z: number): Floor {
+		if (!this.floors[z]) {
+			this.floors[z] = new Floor();
+		}
+		return this.floors[z];
+	}
+
+	public getFloor(z: number): Floor {
+		return this.floors[z];
+	}
+
+	public addCreature(c: Creature): void {
+		this.creatureList.push(c);
+
+		if (c.isPlayer) {
+			this.playerList.push(c);
+		}
+	}
+
+	public removeCreature(c: Creature): void {
+		const index = this.creatureList.indexOf(c);
+		if (index > -1) {
+			this.creatureList.splice(index, 1);
+		}
+
+		if (c.isPlayer) {
+			const index = this.playerList.indexOf(c);
+			if (index > -1) {
+				this.playerList.splice(index, 1);
+			}
+		}
+	}
+}
 
 export class WorldMap {
 
@@ -80,7 +194,7 @@ export class WorldMap {
 
 	public spectatorCache;
 	public playerSpectatorCache;
-	public root;
+	public root: QTreeNode;
 
 	public width: number = 0;
 	public height: number = 0;
@@ -129,82 +243,137 @@ export class WorldMap {
 			return null;
 		}
 
-		// const QTreeLeafNode* leaf = QTreeNode::getLeafStatic<const QTreeLeafNode*, const QTreeNode*>(&root, x, y);
-		// if (!leaf) {
-		// 	return nullptr;
-		// }
+		// const leaf: QTreeLeafNode = QTreeNode.getLeafStatic<const QTreeLeafNode*, const QTreeNode*>(this.root, x, y);
+		const leaf = QTreeLeafNode.cast(this.root); // node idea if this works
+		if (!leaf) {
+			return null;
+		}
 
-		// const Floor* floor = leaf->getFloor(z);
-		// if (!floor) {
-		// 	return nullptr;
-		// }
-		// return floor ->tiles[x & FLOOR_MASK][y & FLOOR_MASK];
-		return null;
+		const floor: Floor = leaf.getFloor(z);
+		if (!floor) {
+			return null;
+		}
+		return floor.tiles[x & FLOOR_MASK][y & FLOOR_MASK];
 	}
 
-	public setTile(tile: Tile): void {
-		const tilePos: Position = tile.getPosition();
+	public setTile(newTile: Tile): void {
+		const tilePos: Position = newTile.getPosition();
 		if (tilePos.z >= MAP_MAX_LAYERS) {
 			console.log(`ERROR: Attempt to set tile on invalid coordinate ${tilePos.toString()}!`);
 			return;
 		}
 
-		// QTreeLeafNode::newLeaf = false;
-		// QTreeLeafNode * leaf = root.createLeaf(x, y, 15);
+		QTreeLeafNode.newLeaf = false;
+		const leaf: QTreeLeafNode = this.root.createLeaf(tilePos.x, tilePos.y, 15);
 
-		// if (QTreeLeafNode::newLeaf) {
-		// 	//update north
-		// 	QTreeLeafNode * northLeaf = root.getLeaf(x, y - FLOOR_SIZE);
-		// 	if (northLeaf) {
-		// 		northLeaf ->leafS = leaf;
-		// 	}
+		if (QTreeLeafNode.newLeaf) {
+			//update north
+			const northLeaf: QTreeLeafNode = this.root.getLeaf(tilePos.x, tilePos.y - FLOOR_SIZE);
+			if (northLeaf) {
+				northLeaf.leafS = leaf;
+			}
 
-		// 	//update west leaf
-		// 	QTreeLeafNode * westLeaf = root.getLeaf(x - FLOOR_SIZE, y);
-		// 	if (westLeaf) {
-		// 		westLeaf ->leafE = leaf;
-		// 	}
+			//update west leaf
+			const westLeaf: QTreeLeafNode = this.root.getLeaf(tilePos.x - FLOOR_SIZE, tilePos.y);
+			if (westLeaf) {
+				westLeaf.leafE = leaf;
+			}
 
-		// 	//update south
-		// 	QTreeLeafNode * southLeaf = root.getLeaf(x, y + FLOOR_SIZE);
-		// 	if (southLeaf) {
-		// 		leaf ->leafS = southLeaf;
-		// 	}
+			//update south
+			const southLeaf: QTreeLeafNode = this.root.getLeaf(tilePos.x, tilePos.y + FLOOR_SIZE);
+			if (southLeaf) {
+				leaf.leafS = southLeaf;
+			}
 
-		// 	//update east
-		// 	QTreeLeafNode * eastLeaf = root.getLeaf(x + FLOOR_SIZE, y);
-		// 	if (eastLeaf) {
-		// 		leaf ->leafE = eastLeaf;
-		// 	}
-		// }
+			//update east
+			const eastLeaf: QTreeLeafNode = this.root.getLeaf(tilePos.x + FLOOR_SIZE, tilePos.y);
+			if (eastLeaf) {
+				leaf.leafE = eastLeaf;
+			}
+		}
 
-		// Floor * floor = leaf ->createFloor(z);
-		// uint32_t offsetX = x & FLOOR_MASK;
-		// uint32_t offsetY = y & FLOOR_MASK;
+		const floor: Floor = leaf.createFloor(tilePos.z);
+		const offsetX = tilePos.x & FLOOR_MASK;
+		const offsetY = tilePos.y & FLOOR_MASK;
 
-		// Tile *& tile = floor ->tiles[offsetX][offsetY];
-		// if (tile) {
-		// 	TileItemVector * items = newTile ->getItemList();
-		// 	if (items) {
-		// 		for (auto it = items ->rbegin(), end = items ->rend(); it != end; ++it) {
-		// 			tile ->addThing(*it);
-		// 		}
-		// 		items ->clear();
-		// 	}
+		const tile: Tile = floor.tiles[offsetX][offsetY];
+		if (tile) {
+			const items = newTile.itemList.getItems();
+			if (items) {
+				for (let it of items) {
+					tile.addThing(it);
+				}
+				newTile.itemList.clear();
+			}
 
-		// 	Item * ground = newTile ->getGround();
-		// 	if (ground) {
-		// 		tile ->addThing(ground);
-		// 		newTile ->setGround(nullptr);
-		// 	}
-		// 	delete newTile;
-		// } else {
-		// 	tile = newTile;
-		// }
+			if (newTile.ground) {
+				tile.addThing(newTile.ground);
+				newTile.ground = null;
+			}
+			// delete newTile;
+		} else {
+			floor.tiles[offsetX][offsetY] = newTile;
+		}
 	}
 
 	public placeCreature(centerPos: Position, creature: Creature, extendedPos: boolean = false, forceLogin: boolean = false): boolean {
+		let foundTile: boolean;
+		let placeInPZ: boolean;
+
+		let tile = this.getTile(centerPos.x, centerPos.y, centerPos.z);
+		if (tile) {
+			placeInPZ = tile.hasFlag(TileFlag.TILESTATE_PROTECTIONZONE);
+			const ret = tile.queryAdd(0, creature, 1, CylinderFlag.FLAG_IGNOREBLOCKITEM);
+			foundTile = forceLogin || ret === ReturnValue.RETURNVALUE_NOERROR || ret === ReturnValue.RETURNVALUE_PLAYERISNOTINVITED;
+		} else {
+			placeInPZ = false;
+			foundTile = false;
+		}
+
+		if (!foundTile) {
+			const relList: Array<{ x: number, y: number }> = (extendedPos ? WorldMap.extendedRelList : WorldMap.normalRelList);
+
+			if (extendedPos) {
+				shuffleArray(relList);
+				// std::shuffle(relList.begin(), relList.begin() + 4, getRandomGenerator());
+				// std::shuffle(relList.begin() + 4, relList.end(), getRandomGenerator());
+			} else {
+				// std::shuffle(relList.begin(), relList.end(), getRandomGenerator());
+				shuffleArray(relList);
+			}
+
+			for (let it of relList) {
+				const tryPos = new Position(centerPos.x + it.x, centerPos.y + it.y, centerPos.z);
+
+				tile = this.getTile(tryPos.x, tryPos.y, tryPos.z);
+				if (!tile || (placeInPZ && !tile.hasFlag(TileFlag.TILESTATE_PROTECTIONZONE))) {
+					continue;
+				}
+
+				if (tile.queryAdd(0, creature, 1, 0) === ReturnValue.RETURNVALUE_NOERROR) {
+					if (!extendedPos || this.isSightClear(centerPos, tryPos, false)) {
+						foundTile = true;
+						break;
+					}
+				}
+			}
+
+			if (!foundTile) {
+				return false;
+			}
+		}
+
+		let index = 0;
+		let flags = 0;
+		let toItem: Item = null;
+
+		const toCylinder: Cylinder = tile.queryDestination(index, creature, toItem, flags); // to do
+		toCylinder.internalAddThing(creature);
+
+		const dest: Position = toCylinder.getPosition();
+		this.getQTNode(dest.x, dest.y).addCreature(creature);
 		return true;
+
 	}
 
 	public moveCreature(creature: Creature, newTile: Tile, forceTeleport: boolean = false): void {
@@ -248,8 +417,24 @@ export class WorldMap {
 		return null;
 	}
 
-	// public addTown(town: Town): void {
-	// 	this.towns.add(town);
-	// }
+	public addTown(town: Town): void {
+		this.towns.add(town);
+	}
+
+
+
+	public static extendedRelList: Array<{ x: number, y: number }> = [
+		{ x: 0, y: -2 },
+		{ x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+		{ x: -2, y: 0 }, { x: -1, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 },
+		{ x: -1, y: 1 }, { x: 0, y: 1 }, { x: 1, y: 1 },
+		{ x: 0, y: 2 }
+	];
+
+	public static normalRelList: Array<{ x: number, y: number }> = [
+		{ x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 },
+		{ x: -1, y: 0 }, { x: 1, y: 0 },
+		{ x: -1, y: 1 }, { x: 0, y: 1 }, { x: 1, y: 1 }
+	];
 
 }

@@ -2,8 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Item } from './item';
 import { FileLoader, Node, PropertyReader } from './fileLoader';
-import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlags } from './enums';
-import { WorldMap, Town, Tile } from './worldMap';
+import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlag } from './enums';
+import { WorldMap, Town } from './worldMap';
+import { Tile } from './Tile';
 import { Position } from './Position';
 
 export class OTBMLoader {
@@ -135,21 +136,21 @@ export class OTBMLoader {
 					switch (attribute) {
 						case OtbmAttribute.TileFlags: {
 							const flags = props.readUInt32();
-							if ((flags & TileFlags.ProtectionZone) == TileFlags.ProtectionZone) {
+							if ((flags & TileFlag.ProtectionZone) == TileFlag.ProtectionZone) {
 								tile.isProtectionZone = true;
 							}
-							else if ((flags & TileFlags.NoPvpZone) == TileFlags.NoPvpZone) {
+							else if ((flags & TileFlag.NoPvpZone) == TileFlag.NoPvpZone) {
 								tile.isNoPvpZone = true;
 							}
-							else if ((flags & TileFlags.PvpZone) == TileFlags.PvpZone) {
+							else if ((flags & TileFlag.PvpZone) == TileFlag.PvpZone) {
 								tile.isPvpZone = true;
 							}
 
-							if ((flags & TileFlags.NoLogout) == TileFlags.NoLogout) {
+							if ((flags & TileFlag.NoLogout) == TileFlag.NoLogout) {
 								tile.isNoLogoutZone = true;
 							}
 
-							if ((flags & TileFlags.Refresh) == TileFlags.Refresh) {
+							if ((flags & TileFlag.Refresh) == TileFlag.Refresh) {
 								// TODO: Warn about house
 								tile.isRefreshZone = true;
 							}

@@ -29,6 +29,8 @@ export class Player extends Creature {
 
 	public lastPong: Date = new Date(0);
 
+	public isPlayer: boolean = true;
+
 	public static loadPlayerFromDatabase(playerName: string, done: (err: Error, player?: Player) => void): void {
 		models
 			.Player

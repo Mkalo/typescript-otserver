@@ -7,6 +7,8 @@ export class Creature {
 	public position: Position = new Position(0, 0, 0);
 	public outfit: Outfit = new Outfit("default", 0, 0);
 
+	public isPlayer: boolean = false;
+
 	public health: number = 0;
 	public maxHealth: number = 0;
 

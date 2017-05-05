@@ -129,6 +129,18 @@ export class Item {
 
 }
 
+export class ItemList {
+	private itemList: Item[] = [];
+
+	public getItems(): Item[] {
+		return this.itemList;
+	}
+
+	public clear(): void {
+		this.itemList = [];
+	}
+}
+
 export class Items {
 
     public static idMap: Map<number, ItemType> = new Map<number, ItemType>();
