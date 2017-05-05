@@ -8,6 +8,7 @@ import { Config } from "./config";
 import { OTBLoader } from './OTBLoader';
 import { OTBMLoader } from './OTBMLoader';
 import { Game } from './game';
+import { WorldMap } from './worldMap';
 import { mongoose, models } from './db';
 import { waterfall, eachSeries } from 'async';
 
@@ -16,6 +17,9 @@ export const g_rsa: RSA = RSA.getInstance();
 export const g_game: Game = new Game();
 const dataDirectory = path.join(__dirname, '..', '..', 'data');
 const uri = g_config.db.generateURI();
+export let g_map: WorldMap = new WorldMap();
+
+const world = g_config.worlds[0];
 
 export class Otserv {
 
@@ -24,11 +28,13 @@ export class Otserv {
 		waterfall([
 			setupDBConnection,
 			recreateDB,
+			loadItems,
+			loadMap,
 			startServices
 		], (err, results) => {
 			if (err) return console.error(err);
 
-			console.log('Initalization done!');
+			console.log('Server is online!');
 		});
 	}
 
@@ -75,6 +81,33 @@ const recreateDB = (done: (err: Error) => void) => {
 			return done(err);
 		});
 	});
+};
+
+const loadItems = (done: (err: Error) => void) => {
+	try {
+		console.log("Loading items...");
+		const itemsFileName = path.join(dataDirectory, world.itemsFileName);
+		const otbLoader = new OTBLoader();
+		if (!otbLoader.loadItems(itemsFileName))
+			return done(new Error(`Couldn't load items from ${itemsFileName}!`));
+
+		return done(null);
+	} catch (e) {
+		return done(e);
+	}
+};
+
+const loadMap = (done: (err: Error) => void) => {
+	try {
+		console.log("Loading map...");
+		const mapFileName = path.join(dataDirectory, world.mapFileName);
+		if (!g_map.loadMap(mapFileName, true))
+			return done(new Error(`Couldn't load map from ${mapFileName}!`));
+
+		return done(null);
+	} catch (e) {
+		return done(e);
+	}
 };
 
 const startServices = (done: (err: Error) => void) => {
