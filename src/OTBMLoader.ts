@@ -4,7 +4,7 @@ import { Item } from './item';
 import { FileLoader, Node, PropertyReader } from './fileLoader';
 import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlags } from './enums';
 import { WorldMap, Town, Tile } from './worldMap';
-import { Position } from './position';
+import { Position } from './Position';
 
 export class OTBMLoader {
 
