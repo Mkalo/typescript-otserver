@@ -106,7 +106,7 @@ export class Connection {
 
 		if (recvChecksum !== checksum) {
 			msg.setPosition(msg.getPosition() - 4);
-			return console.log('invalid checksum'); // temp - not sure why it happens
+			return; //console.log('invalid checksum'); // temp - not sure why it happens
 		}
 
 		if (!this.receivedFirst) {
