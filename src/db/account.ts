@@ -18,7 +18,8 @@ const AccountSchema = new mongoose.Schema({
 		type: String,
 		unique: true,
 		required: true,
-		validate: [ validator.isEmail, 'Invalid email address.' ]
+		validator: validator.isEmail,
+		message: 'Invalid email address.'
 	},
 	type: {
 		type: String,
