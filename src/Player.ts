@@ -27,6 +27,8 @@ export class Player extends Creature {
 	public isLoggedIn: boolean = false;
 	public isRemoved: boolean = false
 
+	public lastPong: Date = new Date(0);
+
 	public static loadPlayerFromDatabase(playerName: string, done: (err: Error, player?: Player) => void): void {
 		models
 			.Player
