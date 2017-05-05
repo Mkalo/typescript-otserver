@@ -13,8 +13,8 @@ export class OTBMLoader {
 	private houseFile: string;
 	private spawnFile: string;
 
-	constructor() {
-		this.map = new WorldMap();
+	constructor(map: WorldMap) {
+		this.map = map;
 	}
 
 	public load(mapName: string): boolean {
@@ -207,7 +207,7 @@ export class OTBMLoader {
 			const templeLocation: Position = new Position(townTempleX, townTempleY, townTempleZ);
 			const town: Town = new Town(townID, townName, templeLocation);
 
-			this.map.addTown(town);
+			this.map.towns.add(town);
 
 			nodeTown = nodeTown.next;
 		}
