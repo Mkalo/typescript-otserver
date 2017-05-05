@@ -25,7 +25,6 @@ export class Player extends Creature {
 	public soul: number = 0;
 
 	public isLoggedIn: boolean = false;
-	public isRemoved: boolean = false
 
 	public lastPong: Date = new Date(0);
 
