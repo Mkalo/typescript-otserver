@@ -1,3 +1,5 @@
+import { Position } from './Position';
+
 export class Town {
 
 	private id: number;
