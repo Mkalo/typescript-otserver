@@ -4,4 +4,9 @@ export const numberToHexString = (number: number): string => {
 	}
 
 	return number.toString(16).toUpperCase();
-}
+};
+
+export const cast = <T>(obj, cl): T => {
+	obj.__proto__ = cl.prototype;
+	return obj;
+};
