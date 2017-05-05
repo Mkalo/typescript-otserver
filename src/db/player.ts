@@ -23,7 +23,15 @@ const PlayerSchema = new mongoose.Schema({
 		type: Number,
 		default: 0
 	},
+	maxHealth: {
+		type: Number,
+		deault: 0
+	},
 	mana: {
+		type: Number,
+		default: 0
+	},
+	maxMana: {
 		type: Number,
 		default: 0
 	},
@@ -106,6 +114,10 @@ const PlayerSchema = new mongoose.Schema({
 		type: Number,
 		default: 0
 	},
+	lastLogin: {
+		type: Date,
+		default: new Date(0)
+	},
 	deleted: {
 		type: Boolean,
 		defaut: false
@@ -159,4 +171,4 @@ const PlayerSchema = new mongoose.Schema({
 	}
 });
 
-export const Player = mongoose.model('Player', PlayerSchema);
+export default mongoose.model('Player', PlayerSchema);

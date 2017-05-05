@@ -1,5 +1,5 @@
 import { g_config } from '../otserv';
-import * as models from '../models';
+import { models } from '../db';
 import * as moment from 'moment';
 
 export class AuthService {

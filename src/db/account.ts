@@ -4,7 +4,7 @@ import * as validator from 'validator';
 
 const SALT_LENGTH = 10;
 
-export const AccountSchema = new mongoose.Schema({
+const AccountSchema = new mongoose.Schema({
 	login: {
 		type: String,
 		required: true,
@@ -68,4 +68,4 @@ AccountSchema.methods.comparePassword = function(candidatePassword, cb) {
 	});
 };
 
-export const Account = mongoose.model('Account', AccountSchema);
+export default mongoose.model('Account', AccountSchema);
