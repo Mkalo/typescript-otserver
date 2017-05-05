@@ -47,7 +47,8 @@ export abstract class Protocol {
 	}
 
 	protected disconnect(): void {
-		// TODO
+		this.connection.close();
+		// remove event listerenrs???
 	}
 
 	protected isXTEAEncryptionEnabled() {

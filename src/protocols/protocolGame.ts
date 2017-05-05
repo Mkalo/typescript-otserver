@@ -54,7 +54,7 @@ export class ProtocolGame extends Protocol {
 					finalPacket.addUInt8(val);
 				}
 			}
-			
+
 			this.packetsReadyToSend = [];
 			return this.send(finalPacket);
 		}, 10);
@@ -148,8 +148,7 @@ export class ProtocolGame extends Protocol {
 	}
 
 	public parsePacket(msg: NetworkMessage) {
-		const buffer = msg.getBuffer();
-		msg.skipBytes(2);
+		msg.skipBytes(2); // skip real packet length
 		if (g_game.getState() == GameState.Shutdown || msg.getLength() <= 0) {
 			return;
 		}
@@ -175,10 +174,50 @@ export class ProtocolGame extends Protocol {
 			}
 		}
 
-		// const buffer = msg.getBuffer();
-		// return;
-		// msg.skipBytes(2); // packet length
-		console.log("Received packet from the client:", recvbyte);
+		if (recvbyte === 0x14) {
+			return this.logout(true, false);
+		}
+
+
+		// // const buffer = msg.getBuffer();
+		// // return;
+		// // msg.skipBytes(2); // packet length
+		// console.log("Received packet from the client:", recvbyte);
+	}
+
+	private logout(displayEffect: boolean, forced: boolean): void {
+		if (!this.player)
+			return;
+
+		if (!this.player.isRemoved) {
+			if (!forced) {
+				if (!this.player.isAccessPlayer()) {
+					// if (player ->getTile() ->hasFlag(TILESTATE_NOLOGOUT)) {
+					// 	player.sendCancelMessage(RETURNVALUE_YOUCANNOTLOGOUTHERE);
+					// 	return;
+					// }
+
+					// if (!player ->getTile() ->hasFlag(TILESTATE_PROTECTIONZONE) && player ->hasCondition(CONDITION_INFIGHT)) {
+					// 	player.sendCancelMessage(RETURNVALUE_YOUMAYNOTLOGOUTDURINGAFIGHT);
+					// 	return;
+					// }
+				}
+
+				//scripting event - onLogout
+				// if (!g_creatureEvents ->playerLogout(player)) {
+				// 	//Let the script handle the error message
+				// 	return;
+				// }
+			}
+
+			if (displayEffect && this.player.health > 0) {
+				// g_game.addMagicEffect(player ->getPosition(), CONST_ME_POFF);
+			}
+		}
+
+		this.player.isLoggedIn = false;
+		this.disconnect();
+		// remove creature
 	}
 
 	private login(accountName: string, password: string, characterName: string, token: string, tokenTime: number): void {

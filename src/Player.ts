@@ -73,4 +73,8 @@ export class Player extends Creature {
 			this.id = Player.playerAutoID++;
 		}
 	}
+
+	public isAccessPlayer(): boolean {
+		return false;
+	}
 }
