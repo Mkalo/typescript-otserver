@@ -14,9 +14,6 @@ import * as shuffleArray from 'shuffle-array';
 
 export const MAP_MAX_LAYERS = 16;
 
-export const FLOOR_BITS = 3;
-export const FLOOR_SIZE = (1 << FLOOR_BITS);
-export const FLOOR_MASK = (FLOOR_SIZE - 1);
 class SpectatorVec { }
 class Direction { }
 class FrozenPathingConditionCall { }
@@ -28,7 +25,7 @@ class LeafTemplate {
 }
 
 class QTreeNode {
-	public isLeaf: boolean = false;
+	public leaf: boolean = false;
 	public child: QTreeNode[] = [];
 
 	public getLeafStatic<T extends LeafTemplate>(node: T, x: number, y: number): T { // WTF is that???
@@ -57,7 +54,7 @@ class QTreeNode {
 	}
 
 	public createLeaf(x: number, y: number, level: number): QTreeLeafNode {
-		if (!this.isLeaf) {
+		if (!this.isLeaf()) {
 			const index = ((x & 0x8000) >> 15) | ((y & 0x8000) >> 14);
 			if (!this.child[index]) {
 				if (level != FLOOR_BITS) {
@@ -71,10 +68,14 @@ class QTreeNode {
 		}
 		return QTreeLeafNode.cast(this); // no idea if this works
 	}
+
+	public isLeaf(): boolean {
+		return this.leaf;
+	}
 }
 
 class QTreeLeafNode extends QTreeNode {
-	static newLeaf: boolean = true;;
+	static newLeaf: boolean;
 
 	public leafS: QTreeLeafNode = null;
 	public leafE: QTreeLeafNode = null;
@@ -90,6 +91,7 @@ class QTreeLeafNode extends QTreeNode {
 
 	public constructor() {
 		super();
+		this.leaf = true;
 		QTreeLeafNode.newLeaf = true;
 	}
 	// 	~QTreeLeafNode();
@@ -144,7 +146,7 @@ export class WorldMap {
 
 	public spectatorCache;
 	public playerSpectatorCache;
-	public root: QTreeNode;
+	public root: QTreeNode = new QTreeNode();
 
 	public width: number = 0;
 	public height: number = 0;
