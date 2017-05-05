@@ -5,6 +5,7 @@ import { Item } from './item';
 import { Tile } from './Tile';
 import { Town, Towns } from './Town';
 import { OTBMLoader } from './OTBMLoader';
+import { Cylinder } from './Cylinder';
 import * as deepExtend from 'deep-extend';
 import * as shuffleArray from 'shuffle-array';
 
@@ -26,20 +27,6 @@ class Floor {
 
 	constructor() {
 		// finish 2 dimensional array init
-	}
-}
-
-class Thing {
-
-}
-
-class Cylinder {
-	public internalAddThing(thing: Thing) {
-
-	}
-
-	public getPosition(): Position {
-		return null;
 	}
 }
 

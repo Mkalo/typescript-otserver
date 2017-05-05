@@ -1,7 +1,8 @@
 import { Position } from './Position';
 import { Outfit } from './Outfit';
+import { Thing } from './Thing';
 
-export class Creature {
+export class Creature extends Thing {
 	protected id: number = 0;
 	public name: string = '';
 	public position: Position = new Position(0, 0, 0);
