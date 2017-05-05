@@ -815,3 +815,9 @@ export enum ReturnValue {
 	RETURNVALUE_YOUARENOTTHEOWNER,
 };
 
+export enum CylinderLink {
+	LINK_OWNER,
+	LINK_PARENT,
+	LINK_TOPPARENT,
+	LINK_NEAR,
+};
