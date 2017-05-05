@@ -28,4 +28,9 @@ export class Position {
 		return this;
 	}
 
+	public toString(): string {
+		const { x, y, z } = this;
+		return JSON.stringify({ x, y, z });
+	}
+
 }
