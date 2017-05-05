@@ -6,6 +6,9 @@ import { Tile } from './Tile';
 import { Town, Towns } from './Town';
 import { OTBMLoader } from './OTBMLoader';
 import { Cylinder } from './Cylinder';
+import { Spawn, Spawns } from './Spawn';
+import { House, Houses } from './House';
+import { Floor, FLOOR_SIZE, FLOOR_MASK, FLOOR_BITS } from './Floor';
 import * as deepExtend from 'deep-extend';
 import * as shuffleArray from 'shuffle-array';
 
@@ -14,21 +17,10 @@ export const MAP_MAX_LAYERS = 16;
 export const FLOOR_BITS = 3;
 export const FLOOR_SIZE = (1 << FLOOR_BITS);
 export const FLOOR_MASK = (FLOOR_SIZE - 1);
-
-class Houses { }
-class Spawns { }
 class SpectatorVec { }
 class Direction { }
 class FrozenPathingConditionCall { }
 class FindPathParams { }
-
-class Floor {
-	public tiles: Tile[][] = [];
-
-	constructor() {
-		// finish 2 dimensional array init
-	}
-}
 
 class LeafTemplate {
 	public child;
