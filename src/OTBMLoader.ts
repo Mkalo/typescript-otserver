@@ -3,7 +3,8 @@ import * as path from 'path';
 import { Item } from './item';
 import { FileLoader, Node, PropertyReader } from './fileLoader';
 import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlag } from './enums';
-import { WorldMap, Town } from './worldMap';
+import { WorldMap } from './worldMap';
+import { Town } from './Town';
 import { Tile } from './Tile';
 import { Position } from './Position';
 
