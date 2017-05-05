@@ -17,11 +17,21 @@ export class Creature extends Thing {
 	public static speedB: number = 261.29;
 	public static speedC: number = -4795.01;
 
+	private removed: boolean = false;
+
 	public setID(newId: number): void {
 		this.id = newId;
 	}
 
 	public getID(): number {
 		return this.id;
+	}
+
+	public isRemoved(): boolean {
+		return this.removed;
+	}
+
+	public remove(): void {
+		this.removed = true;
 	}
 }
