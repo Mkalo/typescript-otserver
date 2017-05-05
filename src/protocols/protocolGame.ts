@@ -165,7 +165,7 @@ export class ProtocolGame extends Protocol {
 		}
 
 		//a dead player can not performs actions
-		if (this.player.isRemoved || (this.player.health < this.player.maxHealth && this.player.health <= 0)) {
+		if (this.player.isRemoved() || (this.player.health < this.player.maxHealth && this.player.health <= 0)) {
 			if (recvbyte === 0x0F) {
 				return this.disconnect();
 			}
@@ -267,7 +267,7 @@ export class ProtocolGame extends Protocol {
 		if (!this.player)
 			return;
 
-		if (!this.player.isRemoved) {
+		if (!this.player.isRemoved()) {
 			if (!forced) {
 				if (!this.player.isAccessPlayer()) {
 					// if (player ->getTile() ->hasFlag(TILESTATE_NOLOGOUT)) {
