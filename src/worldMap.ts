@@ -3,6 +3,7 @@ import { Position } from './Position';
 import { Creature } from './Creature';
 import { Item } from './item';
 import { Tile } from './Tile';
+import { Town, Towns } from './Town';
 import { OTBMLoader } from './OTBMLoader';
 import * as deepExtend from 'deep-extend';
 import * as shuffleArray from 'shuffle-array';
@@ -13,42 +14,12 @@ export const FLOOR_BITS = 3;
 export const FLOOR_SIZE = (1 << FLOOR_BITS);
 export const FLOOR_MASK = (FLOOR_SIZE - 1);
 
-
-export class Town {
-
-	private id: number;
-	private name: string;
-	private templePosition: Position;
-
-	constructor(townID: number, townName: string, templePosition: Position) {
-		this.id = townID;
-		this.name = townName;
-		this.templePosition = templePosition;
-	}
-
-}
-
-export class Towns {
-
-	private towns: Town[];
-
-	constructor() {
-		this.towns = [];
-	}
-
-	public add(town: Town) {
-		this.towns.push(town);
-	}
-
-}
-
 class Houses { }
 class Spawns { }
 class SpectatorVec { }
 class Direction { }
 class FrozenPathingConditionCall { }
 class FindPathParams { }
-
 
 class Floor {
 	public tiles: Tile[][] = [];
