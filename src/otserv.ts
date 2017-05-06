@@ -104,6 +104,16 @@ const loadMap = (done: (err: Error) => void) => {
 		if (!g_map.loadMap(mapFileName, true))
 			return done(new Error(`Couldn't load map from ${mapFileName}!`));
 
+		// const floor = g_map.getFloor(7);
+		const sqms = [];
+
+		for (let x = 1016; x < 1016 + 10; x++) {
+			for (let y = 1019; y < 1019 + 10; y++) {
+				const tile = g_map.getTile(x, y, 7);
+				sqms.push(tile);
+			}
+		}
+
 		return done(null);
 	} catch (e) {
 		return done(e);

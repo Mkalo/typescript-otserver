@@ -12,9 +12,9 @@ export class Floor {
 
 		for (let i: number = 0; i < FLOOR_SIZE; i++) {
 			this.tiles[i] = [];
-			// for (let j: number = 0; j < FLOOR_SIZE; j++) {
-			// 	this.things[i][j] = new Thing();
-			// }
+			for (let j: number = 0; j < FLOOR_SIZE; j++) {
+				this.tiles[i][j] = null;
+			}
 		}
 		// finish 2 dimensional array init
 	}

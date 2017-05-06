@@ -79,7 +79,7 @@ class QTreeLeafNode extends QTreeNode {
 
 	public leafS: QTreeLeafNode = null;
 	public leafE: QTreeLeafNode = null;
-	public floors: Floor[] = [];
+	public static floors: Floor[] = [];
 	public creatureList: Creature[] = [];
 	public playerList: Creature[] = [];
 
@@ -101,14 +101,14 @@ class QTreeLeafNode extends QTreeNode {
 	// 	QTreeLeafNode& operator=(const QTreeLeafNode&) = delete;
 
 	public createFloor(z: number): Floor {
-		if (!this.floors[z]) {
-			this.floors[z] = new Floor();
+		if (!QTreeLeafNode.floors[z]) {
+			QTreeLeafNode.floors[z] = new Floor();
 		}
-		return this.floors[z];
+		return QTreeLeafNode.floors[z];
 	}
 
 	public getFloor(z: number): Floor {
-		return this.floors[z];
+		return QTreeLeafNode.floors[z];
 	}
 
 	public addCreature(c: Creature): void {
@@ -208,6 +208,16 @@ export class WorldMap {
 		return floor.tiles[x & FLOOR_MASK][y & FLOOR_MASK];
 	}
 
+	public getFloor(z: number): Floor {
+		const leaf = QTreeLeafNode.cast(this.root); // node idea if this works
+		if (!leaf) {
+			return null;
+		}
+
+		const floor: Floor = leaf.getFloor(z);
+		return floor;
+	}
+
 	public setTile(newTile: Tile): void {
 		const tilePos: Position = newTile.getPosition();
 		if (tilePos.z >= MAP_MAX_LAYERS) {
@@ -265,6 +275,9 @@ export class WorldMap {
 			// delete newTile;
 		} else {
 			floor.tiles[offsetX][offsetY] = newTile;
+			console.log(floor.tiles[offsetX][offsetY]);
+			console.log(floor);
+			return;
 		}
 	}
 

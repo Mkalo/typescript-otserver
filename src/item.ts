@@ -136,6 +136,10 @@ export class ItemList {
 		return this.itemList;
 	}
 
+	public addItem(item: Item) {
+		this.itemList.push(item);
+	}
+
 	public clear(): void {
 		this.itemList = [];
 	}

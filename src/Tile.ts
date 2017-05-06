@@ -1,6 +1,9 @@
 import { Position } from './Position';
 import { Item, ItemList } from './Item';
 
+throw Error("TO DO XDD");
+
+
 export class Tile {
 
 	public isProtectionZone: boolean = false;
@@ -16,7 +19,12 @@ export class Tile {
 	private position: Position;
 
 	public addItem(item: Item) {
+		if (item.isGround) {
+			this.ground = item;
+			return;
+		}
 		// check if item is ground
+		this.itemList.addItem(item);
 	}
 
 	public addThing(item: Item) {
