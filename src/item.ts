@@ -1,4 +1,13 @@
 import * as Enums from './enums';
+import { Thing } from './Thing';
+import { MagicField } from './MagicField';
+import * as deepExtend from 'deep-extend';
+import { clearObject } from './utils';
+import { ItemGroup } from './enums';
+import { TrashHolder } from './TrashHolder';
+import { Teleport } from './Teleport';
+import { Mailbox } from './Mailbox';
+import { BedItem } from './Bed';
 
 export class ItemType {
 
@@ -62,12 +71,25 @@ export class ItemType {
 	public canLookThrough: boolean = false;
 	public hasExtraByte: boolean = false;
 
+	public isReplacable: boolean = false;
+	public isMagicField: boolean = false;
+
+	public floorChange: number = 0;
+
 	public extend(xmlItem: XMLItem): void {
 		const obj = xmlItem.getObject();
 		if (obj.name)
 			this.name = obj.name;
 
 		// TO DO: extend main object with all xml properties
+	}
+
+	public isSplash(): boolean {
+		return this.group === ItemGroup.ITEM_GROUP_SPLASH;
+	}
+
+	public isGroundTile(): boolean {
+		return this.group === ItemGroup.ITEM_GROUP_GROUND;
 	}
 }
 
@@ -88,7 +110,7 @@ export class ItemFlags {
 export class XMLItem {
 
 	private itemObj: any;
-	
+
 	constructor(item: any) {
 		this.itemObj = item || {};
 	}
@@ -106,12 +128,28 @@ export class XMLItem {
 	}
 }
 
-export class Item {
+export class Item extends Thing {
+	static countByType(item: Item, subType: number): number {
+		if (subType === -1 || subType === item.getSubType()) {
+			return item.count
+		}
 
-	private itemType: ItemType;
+		return 0;
+	}
+
+	public itemType: ItemType;
+
+	public count: number = -1;
 
 	constructor(itemType: ItemType) {
+		super();
 		this.itemType = itemType;
+
+	}
+
+	public replaceWith(newItem: Item): void {
+		clearObject(this);
+		deepExtend(this, newItem);
 	}
 
 	public isGround(): boolean {
@@ -125,6 +163,102 @@ export class Item {
 	public static create(idOrName: string | number): Item {
 		const itemType: ItemType = Items.getItemType(idOrName);
 		return new Item(itemType);
+	}
+
+	public getMagicField(): MagicField {
+		return null;
+	}
+
+	public getTeleport(): Teleport {
+		return null;
+	}
+
+	public getTrashHolder(): TrashHolder {
+		return null;
+	}
+
+	public getMailbox(): Mailbox {
+		return null;
+	}
+
+	public getBed(): BedItem {
+		return null;
+	}
+
+	public hasProperty(property: Enums.ItemProperty): boolean {
+		return false;
+	}
+
+	public hasAttribute(itemAttrType: Enums.ItemAttributeType): boolean {
+		return false;
+	}
+
+	public isHangable(): boolean {
+		return false;
+	}
+
+	public isBlocking(): boolean {
+		return false;
+	}
+
+	public isMagicField(): boolean {
+		return false;
+	}
+
+	public isPickupable(): boolean {
+		return false;
+	}
+
+	public isStackable(): boolean {
+		return false;
+	}
+
+	public getItemCount(): number {
+		return 1;
+	}
+
+	public isMoveable(): boolean {
+		return true;
+	}
+
+	public isReplaceable(): boolean {
+		return this.itemType.isReplacable;
+	}
+
+	public setSubType(n: number): void {
+		const it = this.itemType;
+		if (it.fluid || it.isSplash()) {
+			// setFluidType(n);
+			throw Error('TO DO');
+		} else if (it.isStackable) {
+			this.count = n;
+		} else if (it.charges !== 0) {
+			it.charges = n;
+		} else {
+			this.count = n;
+		}
+	}
+
+	public getSubType(): number {
+		const it = this.itemType;
+		if (it.fluid || it.isSplash()) {
+			// return getFluidType();
+			throw Error('TO DO');
+		} else if (it.isStackable) {
+			return this.count;
+		} else if (it.charges != 0) {
+			return it.charges;
+		}
+		
+		return this.count;
+	}
+
+	public getID(): number {
+		return this.itemType.serverID;
+	}
+
+	public getServerID(): number {
+		return this.itemType.clientID;
 	}
 
 }
@@ -147,34 +281,34 @@ export class ItemList {
 
 export class Items {
 
-    public static idMap: Map<number, ItemType> = new Map<number, ItemType>();
-    public static nameMap: Map<string, ItemType> = new Map<string, ItemType>();
+	public static idMap: Map<number, ItemType> = new Map<number, ItemType>();
+	public static nameMap: Map<string, ItemType> = new Map<string, ItemType>();
 
-    private static defaultObject: ItemType = new ItemType();
+	private static defaultObject: ItemType = new ItemType();
 
-    public static addItemType(itemType: ItemType): void {
-        const itemId = itemType.serverID;
-        const itemName = itemType.name;
+	public static addItemType(itemType: ItemType): void {
+		const itemId = itemType.serverID;
+		const itemName = itemType.name;
 
-        Items.idMap.set(itemId, itemType);
-        Items.nameMap.set(itemName, itemType);
-    }
+		Items.idMap.set(itemId, itemType);
+		Items.nameMap.set(itemName, itemType);
+	}
 
-    public static getItemType(idOrName: string | number): ItemType {
-        idOrName = Number(idOrName) || idOrName; // because "3031" and 3031 are different indexes for Map
+	public static getItemType(idOrName: string | number): ItemType {
+		idOrName = Number(idOrName) || idOrName; // because "3031" and 3031 are different indexes for Map
 		let lookMap: Map<string | number, ItemType>;
-        if (typeof idOrName === "number") {
-            lookMap = Items.idMap;
-        } else {
-            lookMap = Items.nameMap;
-        }
+		if (typeof idOrName === "number") {
+			lookMap = Items.idMap;
+		} else {
+			lookMap = Items.nameMap;
+		}
 
-        const ret: ItemType = lookMap.get(idOrName);
-        if (ret !== undefined) {
-            return ret;
-        }
+		const ret: ItemType = lookMap.get(idOrName);
+		if (ret !== undefined) {
+			return ret;
+		}
 
-        return Items.defaultObject;
-    }
+		return Items.defaultObject;
+	}
 
 }
