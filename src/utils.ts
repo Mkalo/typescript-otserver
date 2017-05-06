@@ -10,3 +10,11 @@ export const cast = <T>(obj, cl): T => {
 	obj.__proto__ = cl.prototype;
 	return obj;
 };
+
+export const clearObject = (obj: Object) => {
+	for (let variableKey in obj) {
+		if (obj.hasOwnProperty(variableKey)) {
+			delete obj[variableKey];
+		}
+	}
+};
