@@ -162,7 +162,7 @@ export class OTBMLoader {
 
 							// TODO: if isHouseTile && !item.Info.IsMoveable
 
-							tile.addItem(item);
+							tile.addThing(item);
 							break;
 						} default: {
 							return false;
@@ -180,7 +180,7 @@ export class OTBMLoader {
 
 					const itemId = props.readUInt16();
 					const item = Item.create(itemId);
-					tile.addItem(item);
+					tile.addThing(item);
 
 					nodeItem = nodeItem.next;
 				}
