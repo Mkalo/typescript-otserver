@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Item } from './item';
+import { Item } from './Item';
 import { FileLoader, Node, PropertyReader } from './fileLoader';
 import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlag } from './enums';
 import { WorldMap } from './worldMap';

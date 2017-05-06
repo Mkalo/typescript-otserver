@@ -1,7 +1,7 @@
 import { TileFlag, CylinderFlag, ReturnValue } from './enums';
 import { Position } from './Position';
 import { Creature } from './Creature';
-import { Item } from './item';
+import { Item } from './Item';
 import { Tile } from './Tile';
 import { Town, Towns } from './Town';
 import { OTBMLoader } from './OTBMLoader';

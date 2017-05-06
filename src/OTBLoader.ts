@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as xmlParser from 'xml2json';
 import { FileLoader, Node, PropertyReader } from './fileLoader';
-import { ItemType, ItemFlags, XMLItem, Items } from './item';
+import { ItemType, ItemFlags, XMLItem, Items } from './Item';
 import { ItemFlag } from './enums';
 
 export class OTBLoader {

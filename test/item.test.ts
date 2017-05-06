@@ -1,5 +1,5 @@
 import { OTBLoader } from '../src/OTBLoader';
-import { Items, Item } from '../src/item';
+import { Items, Item } from '../src/Item';
 import * as path from 'path';
 import * as assert from 'assert';
 
