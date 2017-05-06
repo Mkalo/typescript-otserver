@@ -1,5 +1,7 @@
 import { GameState } from './enums';
 import { Player } from './Player';
+import { Creature } from './Creature';
+import { Item } from './Item';
 
 export class Game {
 
@@ -34,6 +36,14 @@ export class Game {
 
 	public getState(): number {
 		return GameState.Normal;
+	}
+
+	public releaseItem(item: Item): void {
+
+	}
+
+	public releaseCreature(creature: Creature): void {
+
 	}
 
 }
