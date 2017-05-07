@@ -2,7 +2,7 @@ import { TileFlag, CylinderFlag, ReturnValue } from './enums';
 import { Position } from './Position';
 import { Creature } from './Creature';
 import { Item } from './Item';
-import { Tile } from './Tile';
+import { Tile, SpectatorVector } from './Tile';
 import { Town, Towns } from './Town';
 import { OTBMLoader } from './OTBMLoader';
 import { Cylinder } from './Cylinder';
@@ -14,7 +14,6 @@ import * as shuffleArray from 'shuffle-array';
 
 export const MAP_MAX_LAYERS = 16;
 
-class SpectatorVec { }
 class Direction { }
 class FrozenPathingConditionCall { }
 class FindPathParams { }
@@ -345,7 +344,7 @@ export class WorldMap {
 
 	}
 
-	public getSpectators(list: SpectatorVec, centerPos: Position, multifloor: boolean = false, onlyPlayers: boolean = false, minRangeX: number = 0, maxRangeX: number = 0, minRangeY: number = 0, maxRangeY: number = 0): void {
+	public getSpectators(list: SpectatorVector, centerPos: Position, multifloor: boolean = false, onlyPlayers: boolean = false, minRangeX: number = 0, maxRangeX: number = 0, minRangeY: number = 0, maxRangeY: number = 0): void {
 
 	}
 
@@ -378,7 +377,7 @@ export class WorldMap {
 		return null;
 	}
 
-	public getSpectatorsInternal(centerPos: Position, minRangeX: number, maxRangeX: number, minRangeY: number, maxRangeY: number, minRangeZ: number, maxRangeZ: number, onlyPlayers: boolean): SpectatorVec {
+	public getSpectatorsInternal(centerPos: Position, minRangeX: number, maxRangeX: number, minRangeY: number, maxRangeY: number, minRangeZ: number, maxRangeZ: number, onlyPlayers: boolean): SpectatorVector {
 		return null;
 	}
 

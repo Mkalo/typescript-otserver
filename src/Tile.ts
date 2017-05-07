@@ -14,15 +14,35 @@ import { Teleport } from './Teleport';
 import { Mailbox } from './Mailbox';
 import { BedItem } from './Bed';
 
-type CreatureVector = Array<Creature>;
-type ItemVector = Array<Item>;
-type SpectatorVector = Array<Creature>;
+import * as std from 'tstl';
+import { vector, VectorIterator, VectorReverseIterator } from 'tstl';
 
-class TileItemVector extends Array<Item> {
+export class CreatureVector extends vector<Creature> { }
+export class SpectatorVector extends vector<Creature> { }
+
+export class TileItemVector extends vector<Item> {
 	private downItemCount: number = 0;
 
+	public getBeginDownItem(): VectorIterator<Item> {
+		return this.begin();
+	}
+
+	public getEndDownItem(): VectorIterator<Item> { // ????
+		const it = this.begin();
+		for (let i = 0; i < this.downItemCount - 1; i++) {
+			it.next();
+		}
+		return this.begin().next();
+	}
+	public getBeginTopItem(): VectorIterator<Item> {
+		return this.getEndDownItem();
+	}
+	public getEndTopItem(): VectorIterator<Item> {
+		return this.end();
+	}
+
 	public getTopItemCount(): number {
-		return this.length - this.downItemCount;
+		return this.size() - this.downItemCount;
 	}
 
 	public getDownItemCount(): number {
@@ -33,29 +53,26 @@ class TileItemVector extends Array<Item> {
 		if (this.getTopItemCount() === 0) {
 			return null;
 		}
-		return this[this.length - 1]; // OR -2 IDK
+
+		return this.getEndTopItem().prev().value;// return *(this.getEndTopItem() - 1);
 	}
 
 	public getTopDownItem(): Item {
 		if (this.downItemCount === 0) {
 			return null;
 		}
-		return this[0];
+
+		return this.getBeginDownItem().value;
 	}
 
-	public addDownItemCount(increment: number) {
+	public addDownItemCount(increment: number): void {
 		this.downItemCount += increment;
 	}
 
-	public removeItem(item: Item): boolean {
-		const index = this.indexOf(item);
-		if (index === -1)
-			return false;
-		this.splice(index, 1);
-		return true;
+	public static reverse_iterator(iterator: VectorIterator<Item>): VectorReverseIterator<Item> {
+		return null;
 	}
 };
-
 
 export class Tile extends Cylinder {
 
@@ -68,7 +85,7 @@ export class Tile extends Cylinder {
 	public ground: Item = null;
 
 	private itemVector: TileItemVector = new TileItemVector();
-	private creatureVector: CreatureVector = [];
+	private creatureVector: CreatureVector = new CreatureVector();
 
 	public itemList: ItemList = new ItemList();
 
@@ -105,8 +122,8 @@ export class Tile extends Cylinder {
 
 		const items = this.getItemList();
 		if (items) {
-			for (let item of items) {
-				const magicField = item.getMagicField();
+			for (let it = items.rbegin(), end = items.rend(); it !== end; it = it.next()) {
+				const magicField = it.value.getMagicField();
 				if (magicField) {
 					return magicField;
 				}
@@ -122,8 +139,8 @@ export class Tile extends Cylinder {
 
 		const items = this.getItemList();
 		if (items) {
-			for (let item of items) {
-				const teleport = item.getTeleport();
+			for (let it = items.rbegin(), end = items.rend(); it !== end; it = it.next()) {
+				const teleport = it.value.getTeleport();
 				if (teleport) {
 					return teleport;
 				}
@@ -145,8 +162,8 @@ export class Tile extends Cylinder {
 
 		const items = this.getItemList();
 		if (items) {
-			for (let item of items) {
-				const trashHolder = item.getTrashHolder();
+			for (let it = items.rbegin(), end = items.rend(); it !== end; it = it.next()) {
+				const trashHolder = it.value.getTrashHolder();
 				if (trashHolder) {
 					return trashHolder;
 				}
@@ -169,8 +186,8 @@ export class Tile extends Cylinder {
 
 		const items = this.getItemList();
 		if (items) {
-			for (let item of items) {
-				const mailbox = item.getMailbox();
+			for (let it = items.rbegin(), end = items.rend(); it !== end; it = it.next()) {
+				const mailbox = it.value.getMailbox();
 				if (mailbox) {
 					return mailbox;
 				}
@@ -193,8 +210,8 @@ export class Tile extends Cylinder {
 
 		const items = this.getItemList();
 		if (items) {
-			for (let item of items) {
-				const bed = item.getBed();
+			for (let it = items.rbegin(), end = items.rend(); it !== end; it = it.next()) {
+				const bed = it.value.getBed();
 				if (bed) {
 					return bed;
 				}
@@ -206,16 +223,16 @@ export class Tile extends Cylinder {
 
 	public getTopCreature(): Creature {
 		const creatures = this.getCreatures();
-		if (creatures) {
-			return creatures[0] || null;
+		if (!creatures.empty()) {
+			return creatures.begin().value;
 		}
 		return null;
 	}
 
 	public getBottomCreature(): Creature {
 		const creatures = this.getCreatures();
-		if (creatures) {
-			return creatures[creatures.length - 1] || null;
+		if (!creatures.empty()) {
+			return creatures.rbegin().value;
 		}
 		return null;
 	}
@@ -257,17 +274,18 @@ export class Tile extends Cylinder {
 					return this.getBottomCreature();
 				}
 
-				for (let i = creatures.length - 1; i >= 0; i--) {
-					const tileCreature = creatures[i];
-					if (creature.canSeeCreature(tileCreature)) {
-						return tileCreature;
+				for (let it = creatures.rbegin(), end = creatures.rend(); it != end; it = it.next()) {
+					if (creature.canSeeCreature(it.value)) {
+						return it.value;
 					}
 				}
 			} else {
-				for (let i = creatures.length - 1; i >= 0; i--) {
-					const tileCreature = creatures[i];
-					if (creature.canSeeCreature(tileCreature)) {
-						return tileCreature;
+				for (let it = creatures.rbegin(), end = creatures.rend(); it != end; it = it.next()) {
+					if (!it.value.isInvisible()) {
+						const player = it.value.getPlayer();
+						if (!player || !player.isInGhostMode()) {
+							return it.value;
+						}
 					}
 				}
 			}
@@ -277,12 +295,16 @@ export class Tile extends Cylinder {
 
 	public getTopTopItem(): Item {
 		const items = this.getItemList();
-		return items[0] || null;
+		if (items)
+			return items.getTopTopItem();
+		return null;
 	}
 
 	public getTopDownItem(): Item {
 		const items = this.getItemList();
-		return items[items.length - 1] || null;
+		if (items)
+			return items.getTopDownItem();
+		return null;
 	}
 
 	public isMoveableBlocking(): boolean {
@@ -293,7 +315,7 @@ export class Tile extends Cylinder {
 		return null;
 	}
 
-	public getItemByTopOrder(topOrder: number): Item {
+	public getItemByTopOrder(topOrder: number): Item { // NOT SURE IF LOOP IS CORRECT
 		//topOrder:
 		//1: borders
 		//2: ladders, signs, splashes
@@ -301,10 +323,10 @@ export class Tile extends Cylinder {
 		//4: creatures
 		const items = this.getItemList();
 		if (items) {
-			for (let i = items.length - 1; i >= 0; i--) { // not sure if this loop is correct
-				const item = items[i];
-				if (item.itemType.topOrder === topOrder)
-					return item;
+			// for (auto it = ItemVector::const_reverse_iterator(items.getEndTopItem()), end = ItemVector::const_reverse_iterator(items.getBeginTopItem()); it != end; ++it) {
+			for (let it = items.getEndTopItem(), end = items.getBeginTopItem(); it !== end; it = it.prev()) {
+				if (it.value.itemType.topOrder === topOrder)
+					return it.value;
 			}
 		}
 		return null;
@@ -324,7 +346,7 @@ export class Tile extends Cylinder {
 	public getCreatureCount(): number {
 		const creatures = this.getCreatures();
 		if (creatures)
-			return creatures.length
+			return creatures.size();
 
 		return 0;
 	}
@@ -332,7 +354,7 @@ export class Tile extends Cylinder {
 	public getItemCount(): number {
 		const items = this.getItemList();
 		if (items)
-			return items.length;
+			return items.size();
 		return 0;
 	}
 
@@ -359,7 +381,7 @@ export class Tile extends Cylinder {
 			}
 			const items = this.getItemList();
 			if (items) {
-				for (let item of items) {
+				for (const item of items) {
 					if (item !== exclude && item.hasProperty(prop)) {
 						return true;
 					}
@@ -375,7 +397,7 @@ export class Tile extends Cylinder {
 
 		const items = this.getItemList();
 		if (items) {
-			for (let item of items) {
+			for (const item of items) {
 				if (item.hasProperty(prop)) {
 					return true;
 				}
@@ -450,10 +472,10 @@ export class Tile extends Cylinder {
 
 		const creatures = this.getCreatures();
 		if (creatures) {
-			for (let c of creatures.slice().reverse()) {
-				if (c === creature) {
+			for (let it = creatures.rbegin(), end = creatures.rend(); it !== end; it = it.next()) {
+				if (it.value === creature) {
 					return n;
-				} else if (player.canSeeCreature(c)) {
+				} else if (player.canSeeCreature(it.value)) {
 					++n;
 				}
 			}
@@ -474,10 +496,10 @@ export class Tile extends Cylinder {
 
 		const creatures = this.getCreatures();
 		if (creatures) {
-			for (let c of creatures.slice().reverse()) {
-				if (c === creature) {
+			for (let it = creatures.rbegin(), end = creatures.rend(); it !== end; it = it.next()) {
+				if (it.value === creature) {
 					return n;
-				} else if (player.canSeeCreature(c)) {
+				} else if (player.canSeeCreature(it.value)) {
 					if (++n >= 10) {
 						return -1;
 					}
@@ -499,8 +521,8 @@ export class Tile extends Cylinder {
 		const items = this.getItemList();
 		if (items) {
 			if (item.itemType.isAlwaysOnTop) {
-				for (let it of items) {
-					if (it === item) {
+				for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it !== end; it = it.next()) {
+					if (it.value === item) {
 						return n;
 					} else if (++n == 10) {
 						return -1;
@@ -526,9 +548,8 @@ export class Tile extends Cylinder {
 		}
 
 		if (items && !item.itemType.isAlwaysOnTop) {
-			for (let i = items.length - 1; i >= 0; i--) {
-				const it = items[i];
-				if (it === item) {
+			for (let it = items.getBeginDownItem(), end = items.getEndDownItem(); it !== end; it = it.next()) {
+				if (it.value === item) {
 					return n;
 				} else if (++n >= 10) {
 					return -1;
@@ -575,7 +596,7 @@ export class Tile extends Cylinder {
 							}
 						}
 					}
-				} else if (creatures && creatures.length) {
+				} else if (creatures && creatures.size()) {
 					for (let tileCreature of creatures) {
 						if (!tileCreature.isInGhostMode()) {
 							return ReturnValue.RETURNVALUE_NOTENOUGHROOM;
@@ -622,7 +643,7 @@ export class Tile extends Cylinder {
 			const creatures = this.getCreatures();
 			const player = creature.getPlayer();
 			if (player) {
-				if (creatures && creatures.length && !hasBitSet(CylinderFlag.FLAG_IGNOREBLOCKCREATURE, flags) && !player.isAccessPlayer()) {
+				if (creatures && creatures.size() && !hasBitSet(CylinderFlag.FLAG_IGNOREBLOCKCREATURE, flags) && !player.isAccessPlayer()) {
 					for (let tileCreature of creatures) {
 						if (!player.canWalkthrough(tileCreature)) {
 							return ReturnValue.RETURNVALUE_NOTPOSSIBLE;
@@ -653,7 +674,7 @@ export class Tile extends Cylinder {
 						return ReturnValue.RETURNVALUE_PLAYERISPZLOCKED;
 					}
 				}
-			} else if (creatures && creatures.length && !hasBitSet(CylinderFlag.FLAG_IGNOREBLOCKCREATURE, flags)) {
+			} else if (creatures && creatures.size() && !hasBitSet(CylinderFlag.FLAG_IGNOREBLOCKCREATURE, flags)) {
 				for (let tileCreature of creatures) {
 					if (!tileCreature.isInGhostMode()) {
 						return ReturnValue.RETURNVALUE_NOTENOUGHROOM;
@@ -686,11 +707,10 @@ export class Tile extends Cylinder {
 					}
 				}
 			}
-			// } else if (const Item* item = thing.getItem()) {
-		} else if (true) {
+		} else if (thing.getItem()) {
 			const item = thing.getItem(); ///////////////////////////////////////////////////////// remove this
 			const items = this.getItemList();
-			if (items && items.length >= 0xFFFF) {
+			if (items && items.size() >= 0xFFFF) {
 				return ReturnValue.RETURNVALUE_NOTPOSSIBLE;
 			}
 
@@ -704,7 +724,7 @@ export class Tile extends Cylinder {
 			}
 
 			const creatures = this.getCreatures();
-			if (creatures && creatures.length && item.isBlocking() && !hasBitSet(CylinderFlag.FLAG_IGNOREBLOCKCREATURE, flags)) {
+			if (creatures && creatures.size() && item.isBlocking() && !hasBitSet(CylinderFlag.FLAG_IGNOREBLOCKCREATURE, flags)) {
 				for (const tileCreature of creatures) {
 					if (!tileCreature.isInGhostMode()) {
 						return ReturnValue.RETURNVALUE_NOTENOUGHROOM;
@@ -890,7 +910,7 @@ export class Tile extends Cylinder {
 			g_map.clearSpectatorCache();
 			creature.setParent(this);
 			const creatures = this.getCreatures();
-			creatures.unshift(creature);
+			creatures.insert(creatures.begin(), creature);
 		} else {
 			const item = thing.getItem();
 			if (!item) {
@@ -898,7 +918,7 @@ export class Tile extends Cylinder {
 			}
 
 			let items = this.getItemList();
-			if (items && items.length >= 0xFFFF) {
+			if (items && items.size() >= 0xFFFF) {
 				return /*RETURNVALUE_NOTPOSSIBLE*/;
 			}
 
@@ -924,9 +944,8 @@ export class Tile extends Cylinder {
 			} else if (itemType.isAlwaysOnTop) {
 				if (itemType.isSplash() && items) {
 					//remove old splash if exists
-					// for (ItemVector::const_iterator it = items.getBeginTopItem(), end = items.getEndTopItem(); it != end; ++it) {
-					for (let item of items) {
-						const oldSplash: Item = item;
+					for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it !== end; it = it.next()) {
+						const oldSplash = it.value;
 						if (!oldSplash.itemType.isSplash()) {
 							continue;
 						}
@@ -943,11 +962,10 @@ export class Tile extends Cylinder {
 
 				if (items) {
 					// for (let it of items) {
-					for (let i = 0; i < items.length; i++) {
-						const it = items[i];
+					for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it !== end; it = it.next()) {
 						//Note: this is different from internalAddThing
-						if (itemType.topOrder <= it.itemType.topOrder) {
-							items.splice(i, 0, item);
+						if (itemType.topOrder <= it.value.itemType.topOrder) {
+							items.insert(it, item);
 							isInserted = true;
 							break;
 						}
@@ -966,9 +984,8 @@ export class Tile extends Cylinder {
 					//remove old field item if exists
 					if (items) {
 						// for (ItemVector::const_iterator it = items.getBeginDownItem(), end = items.getEndDownItem(); it != end; ++it) {
-						for (let i = items.length - 1; i >= 0; i--) {
-							const it = items[i];
-							const oldField = it.getMagicField();
+						for (let it = items.getBeginDownItem(), end = items.getEndDownItem(); it !== end; it = it.next()) {
+							const oldField = it.value.getMagicField();
 							if (oldField) {
 								if (oldField.itemType.isReplacable) {
 									this.removeThing(oldField, 1);
@@ -989,7 +1006,7 @@ export class Tile extends Cylinder {
 				}
 
 				items = this.getItemList();
-				items.unshift(item);
+				items.insert(items.getBeginDownItem(), item);
 				items.addDownItemCount(1);
 				this.onAddTileItem(item);
 			}
@@ -1042,11 +1059,13 @@ export class Tile extends Cylinder {
 		if (items && !isInserted) {
 			const topItemSize = this.getTopItemCount();
 			if (pos < topItemSize) {
-				let index = 0;
-				index += pos;
+				let it = items.getBeginTopItem();
+				for (let i = 0; i < pos; i++)
+					it = it.next();
 
-				oldItem = items[index];
-				const removed = items.splice(index, 1, item)[0];
+				oldItem = it.value;
+				it = items.erase(it);
+				items.insert(it, item);
 				isInserted = true;
 			}
 
@@ -1055,20 +1074,23 @@ export class Tile extends Cylinder {
 
 		const creatures = this.getCreatures();
 		if (creatures) {
-			if (!isInserted && pos < creatures.length) {
+			if (!isInserted && pos < creatures.size()) {
 				return /*RETURNVALUE_NOTPOSSIBLE*/;
 			}
 
-			pos -= creatures.length;
+			pos -= creatures.size();
 		}
 
 		if (items && !isInserted) {
-			let downItemSize = this.getDownItemCount();
+			const downItemSize = this.getDownItemCount();
 			if (pos < downItemSize) {
-				const index = pos;
-				const item = items[pos];
-				oldItem = item;
-				const removed = items.splice(index, 1, item)[0];
+				let it = items.getBeginDownItem();
+				for (let i = 0; i < pos; i++)
+					it = it.next();
+
+				oldItem = it.value;
+				it = items.erase(it);
+				items.insert(it, item);
 				isInserted = true;
 			}
 		}
@@ -1092,11 +1114,11 @@ export class Tile extends Cylinder {
 		if (creature) {
 			const creatures = this.getCreatures();
 			if (creatures) {
-				// auto it = std::find(creatures.begin(), creatures.end(), thing);
-				// if (it != creatures.end()) {
-				// 	g_game.map.clearSpectatorCache();
-				// 	creatures.erase(it);
-				// }
+				let it = std.find(creatures.begin(), creatures.end(), thing);
+				if (it !== creatures.end()) {
+					g_map.clearSpectatorCache();
+					creatures.erase(it);
+				}
 			}
 			return;
 		}
@@ -1115,9 +1137,9 @@ export class Tile extends Cylinder {
 			this.ground.setParent(null);
 			this.ground = null;
 
-			let list: SpectatorVector = [];
+			let list: SpectatorVector = new SpectatorVector();
 			g_map.getSpectators(list, this.getPosition(), true);
-			this.onRemoveTileItem(list, [], item);
+			this.onRemoveTileItem(list, new vector<number>(), item); // ??
 			return;
 		}
 
@@ -1128,29 +1150,28 @@ export class Tile extends Cylinder {
 
 		const itemType = item.itemType;
 		if (itemType.isAlwaysOnTop) {
-			const index = items.indexOf(item);
-			if (index === items.length - 1)
+			let it = std.find(items.getBeginTopItem(), items.getEndTopItem(), item);
+			if (it == items.getEndTopItem()) {
 				return;
+			}
 
-			const oldStackPosVector: number[] = [];
+			const oldStackPosVector: vector<number> = new vector<number>();
 
-			let list: SpectatorVector = [];
+			const list: SpectatorVector = new SpectatorVector();
 			g_map.getSpectators(list, this.getPosition(), true);
 			for (let spectator of list) {
 				const tmpPlayer = spectator.getPlayer();
 				if (tmpPlayer) {
-					oldStackPosVector.push(this.getStackposOfItem(tmpPlayer, item));
+					oldStackPosVector.push_back(this.getStackposOfItem(tmpPlayer, item));
 				}
 			}
 
 			item.setParent(null);
-			items.removeItem(item);
+			items.erase(it);
 			this.onRemoveTileItem(list, oldStackPosVector, item);
 		} else {
-			const reversedItemList = items.slice().reverse();
-			const found = reversedItemList.find(_item => _item === item);
-			const index = reversedItemList.indexOf(found);
-			if (index === items.length - 1) {
+			let it = std.find(items.getBeginDownItem(), items.getEndDownItem(), item);
+			if (it === items.getEndDownItem()) {
 				return;
 			}
 
@@ -1160,19 +1181,19 @@ export class Tile extends Cylinder {
 				item.count = newCount;
 				this.onUpdateTileItem(item, itemType, item, itemType);
 			} else {
-				const oldStackPosVector: number[] = [];
+				const oldStackPosVector: vector<number> = new vector<number>();
 
-				let list: SpectatorVector = [];
+				const list: SpectatorVector = new SpectatorVector();
 				g_map.getSpectators(list, this.getPosition(), true);
 				for (let spectator of list) {
 					const tmpPlayer = spectator.getPlayer();
 					if (tmpPlayer) {
-						oldStackPosVector.push(this.getStackposOfItem(tmpPlayer, item));
+						oldStackPosVector.push_back(this.getStackposOfItem(tmpPlayer, item));
 					}
 				}
 
 				item.setParent(null);
-				items.unshift(item);
+				items.erase(it);
 				items.addDownItemCount(-1);
 				this.onRemoveTileItem(list, oldStackPosVector, item);
 			}
@@ -1197,10 +1218,11 @@ export class Tile extends Cylinder {
 		if (items) {
 			const item = thing.getItem();
 			if (item && item.itemType.isAlwaysOnTop) {
-				for (let it of items) {
+				for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it != end; it = it.next()) {
 					++n;
-					if (it === item)
+					if (it.value === item) {
 						return n;
+					}
 				}
 			} else {
 				n += items.getTopItemCount();
@@ -1217,18 +1239,18 @@ export class Tile extends Cylinder {
 					}
 				}
 			} else {
-				n += creatures.length;
+				n += creatures.size();
 			}
 		}
 
 		if (items) {
 			const item = thing.getItem();
 			if (item && !item.itemType.isAlwaysOnTop) {
-				for (let i = items.length - 1; i >= 0; i--) {
+				for (let it = items.getBeginDownItem(), end = items.getEndDownItem(); it != end; it = it.next()) {
 					++n;
-					const it = items[i];
-					if (it === item)
+					if (it.value === item) {
 						return n;
+					}
 				}
 			}
 		}
@@ -1280,21 +1302,21 @@ export class Tile extends Cylinder {
 
 		const creatures = this.getCreatures();
 		if (creatures) {
-			if (index < creatures.length) {
+			if (index < creatures.size()) {
 				return creatures[index];
 			}
-			index -= creatures.length;
+			index -= creatures.size();
 		}
 
 		if (items && index < items.getDownItemCount()) {
-			return items[index];
+			return items.at(index);
 		}
 
 		return null;
 	}
 
 	public postAddNotification(thing: Thing, oldParent: Cylinder, index: number, link: CylinderLink = CylinderLink.LINK_OWNER): void {
-		let list: SpectatorVector = [];
+		let list: SpectatorVector = new SpectatorVector();
 		g_map.getSpectators(list, this.getPosition(), true, true);
 		for (let spectator of list) {
 			spectator.getPlayer().postAddNotification(thing, oldParent, index, CylinderLink.LINK_NEAR);
@@ -1348,7 +1370,7 @@ export class Tile extends Cylinder {
 	}
 
 	public postRemoveNotification(thing: Thing, newParent: Cylinder, index: number, link: CylinderLink = CylinderLink.LINK_OWNER): void {
-		let list: SpectatorVector = [];
+		let list: SpectatorVector = new SpectatorVector();
 		g_map.getSpectators(list, this.getPosition(), true, true);
 
 		if (this.getThingCount() > 8) {
@@ -1378,7 +1400,7 @@ export class Tile extends Cylinder {
 		if (creature) {
 			g_map.clearSpectatorCache();
 			const creatures = this.getCreatures();
-			creatures.unshift(creature);
+			creatures.insert(creatures.begin(), creature);
 		} else {
 			const item = thing.getItem();
 			if (!item) {
@@ -1395,26 +1417,34 @@ export class Tile extends Cylinder {
 			}
 
 			const items = this.getItemList();
-			if (items.length >= 0xFFFF) {
+			if (items.size() >= 0xFFFF) {
 				return /*RETURNVALUE_NOTPOSSIBLE*/;
 			}
 
 			if (itemType.isAlwaysOnTop) {
 				let isInserted = false;
-				for (let i = 0; i < items.length; i++) {
-					const it = items[i];
-					if (it.itemType.isAlwaysOnTop > itemType.isAlwaysOnTop) {
-						items.splice(i, 0, item);
+				// for (let i = 0; i < items.length; i++) {
+				// 	const it = items[i];
+				// 	if (it.itemType.isAlwaysOnTop > itemType.isAlwaysOnTop) {
+				// 		items.splice(i, 0, item);
+				// 		isInserted = true;
+				// 		break;
+				// 	}
+				// }
+
+				for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it !== end; it = it.next()) {
+					if (it.value.itemType.isAlwaysOnTop > itemType.isAlwaysOnTop) {
+						items.insert(it, item);
 						isInserted = true;
 						break;
 					}
 				}
 
 				if (!isInserted) {
-					items.push(item);
+					items.push_back(item);
 				}
 			} else {
-				items.push(item);// items.insert(items.getBeginDownItem(), item);
+				items.insert(items.getBeginDownItem(), item);
 				items.addDownItemCount(1);
 			}
 
@@ -1460,7 +1490,7 @@ export class Tile extends Cylinder {
 
 		const cylinderMapPos = this.getPosition();
 
-		const list: SpectatorVector = [];
+		const list: SpectatorVector = new SpectatorVector();
 		g_map.getSpectators(list, cylinderMapPos, true);
 
 		//send to client
@@ -1498,7 +1528,7 @@ export class Tile extends Cylinder {
 
 		const cylinderMapPos = this.getPosition();
 
-		const list: SpectatorVector = [];
+		const list: SpectatorVector = new SpectatorVector();
 		g_map.getSpectators(list, cylinderMapPos, true);
 
 		//send to client
@@ -1515,7 +1545,7 @@ export class Tile extends Cylinder {
 		}
 	}
 
-	private onRemoveTileItem(list: SpectatorVector, oldStackPosVector: Array<number>, item: Item): void {
+	private onRemoveTileItem(list: SpectatorVector, oldStackPosVector: vector<number>, item: Item): void {
 		if (item.hasProperty(ItemProperty.CONST_PROP_MOVEABLE) || item.getContainer()) {
 			// auto it = g_game.browseFields.find(this);
 			// if (it != g_game.browseFields.end()) {

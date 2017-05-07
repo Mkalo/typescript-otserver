@@ -1,9 +1,13 @@
 import { Thing } from './Thing';
+import * as aaa from './Thing';
 import { Item } from './Item';
 import { Creature } from './Creature';
 import { CylinderFlag, CylinderLink, ReturnValue } from './enums';
 
 const INDEX_WHEREEVER = -1;
+const Thing1 = require('./Thing');
+
+console.log({ aaa, Thing, Thing1 });
 
 export class Cylinder extends Thing {
 
