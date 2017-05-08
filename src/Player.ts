@@ -8,6 +8,8 @@ import { Tile } from './Tile';
 import { Item } from './Item';
 import { models, ObjectId } from './db';
 
+import { g_map } from './otserv';
+
 export class Player extends Creature {
 	public static playerAutoID: number = 0x10000000;
 
@@ -120,5 +122,11 @@ export class Player extends Creature {
 
 	public sendAddTileItem(tile: Tile, pos: Position, item: Item): void {
 
+	}
+
+	public getTile(): Tile {
+		const playerPos = this.getPosition();
+		const tile = g_map.getTile(playerPos);
+		return tile;
 	}
 }

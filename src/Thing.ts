@@ -24,17 +24,22 @@ export class Thing {
 		//
 	}
 
-	public getTile(): Tile { // not sure if this is gonna work
-		// return dynamic_cast<Tile*>(this); ///////////////////////////////////////
-		return cast<Tile>(this, Tile);
-	}
+	// public getTile(): Tile { // not sure if this is gonna work
+	// 	// return dynamic_cast<Tile*>(this); ///////////////////////////////////////
+	// 	// return cast<Tile>(this, Tile);
+	// }
+
+	/*
+		/\ 
+		UGLY HACK TO PREVENT CIRCUAR DEPENDENCY :(
+		\/
+	*/
 
 	public getPosition(): Position {
-		const tile = this.getTile();
-		if (!tile)
-			return new Position(0xFFFF, 0xFFFF, 0xFF);
+		if (this["getPosition"])
+			return this["getPosition"]();
 
-		return tile.getPosition();
+		return new Position(0xFFFF, 0xFFFF, 0xFF);
 	}
 
 	public getThrowRange(): number {
