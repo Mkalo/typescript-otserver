@@ -187,9 +187,7 @@ export class Cylinder extends Thing {
 
 export class VirtualCylinder extends Cylinder {
 	public static virtualCylinder: VirtualCylinder = new VirtualCylinder;
-
-
-
+	
 	public queryAdd(index: number, thing: Thing, count: number, flags: number, actor: Creature = null): ReturnValue {
 		return ReturnValue.RETURNVALUE_NOTPOSSIBLE;
 	}

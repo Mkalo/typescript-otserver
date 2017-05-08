@@ -261,22 +261,10 @@ export class Item extends Thing {
 		return this.itemType.clientID;
 	}
 
-}
-
-export class ItemList {
-	private itemList: Item[] = [];
-
-	public getItems(): Item[] {
-		return this.itemList;
+	public getItem(): Item {
+		return this;
 	}
 
-	public addItem(item: Item) {
-		this.itemList.push(item);
-	}
-
-	public clear(): void {
-		this.itemList = [];
-	}
 }
 
 export class Items {

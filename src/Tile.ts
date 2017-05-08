@@ -1,7 +1,7 @@
 import { Position } from './Position';
 import { Creature } from './Creature';
 import { Cylinder } from './Cylinder';
-import { Item, Items, ItemList, ItemType } from './Item';
+import { Item, Items, ItemType } from './Item';
 import { Thing } from './Thing';
 import { Player } from './Player';
 import { MagicField } from './MagicField';
@@ -86,8 +86,6 @@ export class Tile extends Cylinder {
 
 	private itemVector: TileItemVector = new TileItemVector();
 	private creatureVector: CreatureVector = new CreatureVector();
-
-	public itemList: ItemList = new ItemList();
 
 	protected tilePos: Position;
 	protected flags: number = 0;
