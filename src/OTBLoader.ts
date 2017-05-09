@@ -65,6 +65,7 @@ export class OTBLoader {
 			item.isReadable = flags.hasFlag(ItemFlag.Readable);
 			item.hasClientCharges = flags.hasFlag(ItemFlag.ClientCharges);
 			item.canLookThrough = flags.hasFlag(ItemFlag.LookThrough);
+			item.isAnimated = flags.hasFlag(ItemFlag.Animated);
 
 			while (props.canRead(1)) {
 				const attr = props.readInt8();

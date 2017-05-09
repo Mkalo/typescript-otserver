@@ -70,6 +70,7 @@ export class ItemType {
 	public hasClientCharges: boolean = false;
 	public canLookThrough: boolean = false;
 	public hasExtraByte: boolean = false;
+	public isAnimated: boolean = false;
 
 	public isReplacable: boolean = false;
 	public isMagicField: boolean = false;
