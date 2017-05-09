@@ -32,7 +32,7 @@ export class TileItemVector extends vector<Item> {
 		for (let i = 0; i < this.downItemCount - 1; i++) {
 			it.next();
 		}
-		return this.begin().next();
+		return it;
 	}
 	public getBeginTopItem(): VectorIterator<Item> {
 		return this.getEndDownItem();
