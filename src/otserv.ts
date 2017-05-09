@@ -69,8 +69,13 @@ const recreateDB = (done: (err: Error) => void) => {
 				new models.Player({
 					account: accountId,
 					name: "Elderapo" + i++,
-					health: 100,
-					maxHealth: 100
+					health: 30,
+					maxHealth: 100,
+					position: {
+						x: 1018,
+						y: 1022,
+						z: 7
+					}
 				}).save().then((player) => {
 					return done(null);
 				}).catch((err) => {
@@ -103,16 +108,6 @@ const loadMap = (done: (err: Error) => void) => {
 		const mapFileName = path.join(dataDirectory, world.mapFileName);
 		if (!g_map.loadMap(mapFileName, true))
 			return done(new Error(`Couldn't load map from ${mapFileName}!`));
-
-		// const floor = g_map.getFloor(7);
-		const sqms = [];
-
-		for (let x = 1016; x < 1016 + 10; x++) {
-			for (let y = 1019; y < 1019 + 10; y++) {
-				const tile = g_map.getTile(x, y, 7);
-				sqms.push(tile);
-			}
-		}
 
 		return done(null);
 	} catch (e) {
