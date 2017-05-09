@@ -207,19 +207,19 @@ export class Item extends Thing {
 	}
 
 	public isPickupable(): boolean {
-		return false;
+		return this.itemType.isPickupable;
 	}
 
 	public isStackable(): boolean {
-		return false;
+		return this.itemType.isStackable;
 	}
 
 	public getItemCount(): number {
-		return 1;
+		return this.count;
 	}
 
 	public isMoveable(): boolean {
-		return true;
+		return this.itemType.isMoveable;
 	}
 
 	public isReplaceable(): boolean {
