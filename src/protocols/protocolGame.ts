@@ -603,7 +603,7 @@ export class ProtocolGame extends Protocol {
 			msg.addUInt8(Math.floor(creature.health / (creature.maxHealth / 100)));
 		}
 
-		msg.addUInt8(0); // msg.addByte(creature.getDirection());
+		msg.addByte(creature.getDirection());
 
 		if (!creature.isInGhostMode() && !creature.isInvisible()) {
 			this.addOutfit(msg, creature.getCurrentOutfit());
@@ -612,36 +612,35 @@ export class ProtocolGame extends Protocol {
 			this.addOutfit(msg, outfit);
 		}
 
-		const lightInfo = new LightInfo();
-		// creature.getCreatureLight(lightInfo);
+		const lightInfo = creature.getCreatureLight();
 		msg.addByte(this.player.isAccessPlayer() ? 0xFF : lightInfo.level);
 		msg.addByte(lightInfo.color);
 
-		msg.addUInt16(1500 / 2); // msg.addUInt16(creature.getStepSpeed() / 2);
+		msg.addUInt16(creature.getStepSpeed() / 2);
 
-		msg.addUInt8(0); // msg.addByte(player.getSkullClient(creature));
-		msg.addUInt8(0); // msg.addByte(player.getPartyShield(otherPlayer));
+		msg.addByte(this.player.getSkullClient(creature));
+		msg.addByte(this.player.getPartyShield(otherPlayer));
 
 		if (!known.value) {
 			msg.addByte(this.player.getGuildEmblem(otherPlayer));
 		}
 
-		// if (creatureType === CreatureType.CREATURETYPE_MONSTER) {
-		// 	const master = creature.getMaster();
-		// 	if (master) {
-		// 		const masterPlayer = master.getPlayer();
-		// 		if (masterPlayer) {
-		// 			if (masterPlayer === this.player) {
-		// 				creatureType = CreatureType.CREATURETYPE_SUMMON_OWN;
-		// 			} else {
-		// 				creatureType = CreatureType.CREATURETYPE_SUMMON_OTHERS;
-		// 			}
-		// 		}
-		// 	}
-		// }
+		if (creatureType === CreatureType.CREATURETYPE_MONSTER) {
+			const master = creature.getMaster();
+			if (master) {
+				const masterPlayer = master.getPlayer();
+				if (masterPlayer) {
+					if (masterPlayer === this.player) {
+						creatureType = CreatureType.CREATURETYPE_SUMMON_OWN;
+					} else {
+						creatureType = CreatureType.CREATURETYPE_SUMMON_OTHERS;
+					}
+				}
+			}
+		}
 
 		msg.addByte(creatureType); // Type (for summons)
-		msg.addUInt8(0); // msg.addByte(creature.getSpeechBubble());
+		msg.addByte(creature.getSpeechBubble());
 		msg.addByte(0xFF); // MARK_UNMARKED
 
 		if (otherPlayer) {

@@ -5,12 +5,14 @@ import { Player } from './Player';
 import { Monster } from './Monster';
 import { Tile } from './Tile';
 import { Item, ItemType } from './Item';
-import { CombatType, ConditionType, CreatureType } from './enums';
+import { CombatType, ConditionType, CreatureType, Direction } from './enums';
+import { LightInfo } from './LightInfo';
 
 export class Creature extends Thing {
 	protected id: number = 0;
 	public name: string = '';
 	public position: Position = new Position(0, 0, 0);
+	private direction: Direction = Direction.SOUTH;
 	private outfit: Outfit = new Outfit();
 
 	public isPlayer: boolean = false;
@@ -102,5 +104,43 @@ export class Creature extends Thing {
 
 	public setOutfit(outfit: Outfit): void {
 		this.outfit = outfit;
+	}
+
+	public getDirection(): Direction {
+		return this.direction;
+	}
+
+	public setDirection(direction: Direction): void {
+		this.direction = direction;
+	}
+
+	public getCreatureLight(): LightInfo {
+		// TO DO
+		return new LightInfo();
+	}
+
+	public getStepSpeed(): number {
+		// TO DO
+		return 1500;
+	}
+
+	public getSkullClient(creature: Creature): number {
+		// TO DO
+		return 0;
+	}
+
+	public getPartyShield(player: Player): number {
+		// TO DO
+		return 0;
+	}
+
+	public getSpeechBubble(): number {
+		// TO DO
+		return 0;
+	}
+
+	public getMaster(): Creature {
+		// TO DO
+		return null;
 	}
 }
