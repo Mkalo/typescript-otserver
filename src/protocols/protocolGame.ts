@@ -503,7 +503,7 @@ export class ProtocolGame extends Protocol {
 		}
 
 		const items = tile.getItemList();
-		if (items && items.size()) {
+		if (items) {
 			for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it !== end; it = it.next()) {
 				msg.addItem(it.value);
 
@@ -514,7 +514,7 @@ export class ProtocolGame extends Protocol {
 		}
 
 		const creatures = tile.getCreatures();
-		if (creatures && creatures.size()) {
+		if (creatures) {
 
 			// for (const Creature* creature : boost::adaptors::reverse(*creatures)) {
 			for (let it = creatures.rbegin(), end = creatures.rend(); !!it.value; it = it.next()) {
@@ -536,7 +536,7 @@ export class ProtocolGame extends Protocol {
 			}
 		}
 
-		if (items && items.size()) {
+		if (items) {
 			for (let it = items.getBeginDownItem(), end = items.getEndDownItem(); it != end; it = it.next()) {
 				msg.addItem(it.value);
 
