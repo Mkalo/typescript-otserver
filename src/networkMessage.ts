@@ -33,10 +33,9 @@ export class NetworkMessage extends Binary {
 		this.addUInt8(0xFF);
 
 		if (item.isStackable()) {
-			this.addUInt8(Math.min(0xFF, item.count));
-		} else if (item.itemType.isSplash() || item.itemType.fluid) {
-			// this.addUInt8(fluidMap[item.getFluidType() & 7]);
-			this.addUInt8(FluidMap[0] & 7); // FOR NOW
+			this.addUInt8(Math.min(0xFF, item.getItemCount()));
+		} else if (item.itemType.isSplash() || item.isFluidContainer()) {
+			this.addUInt8(FluidMap[item.getFluidType() & 7]);
 		}
 
 		if (item.itemType.isAnimated) {
