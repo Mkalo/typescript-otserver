@@ -1,5 +1,8 @@
 import { NumericType } from "./ctypes";
-import { Binary } from './binary';
+import { Binary, ON_READ_OUT_OF_THE_BUFFER, ON_WRITE_OUT_OF_THE_BUFFER } from './binary';
+import { Item } from './Item';
+import { FluidMap } from './enums';
+import { Position } from './Position';
 
 export class NetworkMessage extends Binary {
 	public static NETWORKMESSAGE_MAXSIZE: number = 24590;
@@ -21,6 +24,43 @@ export class NetworkMessage extends Binary {
 		}
 
 		super(p1);
+	}
+
+	public addItem(item: Item): void {
+		if (!this.canAdd(6)) throw Error(ON_WRITE_OUT_OF_THE_BUFFER);
+
+		this.addUInt16(item.itemType.clientID);
+		this.addUInt8(0xFF);
+
+		if (item.isStackable()) {
+			this.addUInt8(Math.min(0xFF, item.count));
+		} else if (item.itemType.isSplash() || item.itemType.fluid) {
+			// this.addUInt8(fluidMap[item.getFluidType() & 7]);
+			this.addUInt8(FluidMap[0] & 7); // FOR NOW
+		}
+
+		if (item.itemType.isAnimated) {
+			this.addUInt8(0xFE);
+		}
+	}
+
+	public readItem(): Item {
+		throw Error("TO DO");
+	}
+
+	public addPosition(pos: Position): void {
+		const { x, y, z } = pos;
+		this.addUInt16(x);
+		this.addUInt16(y);
+		this.addUInt8(z);
+	}
+
+	public readPosition(): Position {
+		const x = this.readUInt16();
+		const y = this.readUInt16();
+		const z = this.readUInt8();
+		
+		return new Position(x, y, z);
 	}
 
 	public calculateAdler32Checksum(length: number): number {
@@ -113,5 +153,5 @@ export class OutputMessage extends NetworkMessage {
 
 		this.addPacketLength();
 	}
-	
+
 }

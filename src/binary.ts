@@ -1,7 +1,7 @@
 import { NumericType } from "./ctypes";
 
-const ON_READ_OUT_OF_THE_BUFFER = "You are trying to read out of the buffer.";
-const ON_WRITE_OUT_OF_THE_BUFFER = "You are trying to write out of the buffer.";
+export const ON_READ_OUT_OF_THE_BUFFER = "You are trying to read out of the buffer.";
+export const ON_WRITE_OUT_OF_THE_BUFFER = "You are trying to write out of the buffer.";
 
 export class Binary {
 
