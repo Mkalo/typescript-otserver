@@ -8,7 +8,7 @@ import { OTBMLoader } from './OTBMLoader';
 import { Cylinder } from './Cylinder';
 import { Spawn, Spawns } from './Spawn';
 import { House, Houses } from './House';
-import { Floor, FLOOR_SIZE, FLOOR_MASK, FLOOR_BITS } from './Floor';
+import { Floor, FLOOR_SIZE, FLOOR_BITS } from './Floor';
 import * as deepExtend from 'deep-extend';
 import * as shuffleArray from 'shuffle-array';
 
@@ -186,8 +186,8 @@ export class WorldMap {
 		return true;
 	}
 
-	public getTile(x: number, y: number, z: number);
-	public getTile(pos: Position);
+	public getTile(x: number, y: number, z: number): Tile;
+	public getTile(pos: Position): Tile;
 	public getTile(_x: Position | number, _y?: number, _z?: number): Tile {
 		const { x, y, z } = _x instanceof Position ? _x : { x: _x, y: _y, z: _z };
 		if (z >= MAP_MAX_LAYERS) {
@@ -204,7 +204,8 @@ export class WorldMap {
 		if (!floor) {
 			return null;
 		}
-		return floor.tiles[x & FLOOR_MASK][y & FLOOR_MASK];
+		floor.tiles[x] = floor.tiles[x] || [];
+		return floor.tiles[x][y] || null;
 	}
 
 	public getFloor(z: number): Floor {
@@ -254,30 +255,11 @@ export class WorldMap {
 		}
 
 		const floor: Floor = leaf.createFloor(tilePos.z);
-		const offsetX = tilePos.x & FLOOR_MASK;
-		const offsetY = tilePos.y & FLOOR_MASK;
+		const offsetX = tilePos.x;
+		const offsetY = tilePos.y;
 
-		const tile: Tile = floor.tiles[offsetX][offsetY];
-		if (tile) {
-			const items = newTile.itemList.getItems();
-			if (items) {
-				for (let it of items) {
-					tile.addThing(it);
-				}
-				newTile.itemList.clear();
-			}
-
-			if (newTile.ground) {
-				tile.addThing(newTile.ground);
-				newTile.ground = null;
-			}
-			// delete newTile;
-		} else {
-			floor.tiles[offsetX][offsetY] = newTile;
-			console.log(floor.tiles[offsetX][offsetY]);
-			console.log(floor);
-			return;
-		}
+		floor.tiles[offsetX] = floor.tiles[offsetX] || [];
+		floor.tiles[offsetX][offsetY] = newTile;
 	}
 
 	public placeCreature(centerPos: Position, creature: Creature, extendedPos: boolean = false, forceLogin: boolean = false): boolean {
@@ -327,8 +309,8 @@ export class WorldMap {
 			}
 		}
 
-		let index = 0;
-		let flags = 0;
+		let index = { value: 0};
+		let flags = { value: 0};
 		let toItem: Item = null;
 
 		const toCylinder: Cylinder = tile.queryDestination(index, creature, toItem, flags); // to do
