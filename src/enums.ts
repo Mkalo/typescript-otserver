@@ -586,6 +586,7 @@ export enum ItemFlag {
 	Unused = 2097152,
 	ClientCharges = 4194304,
 	LookThrough = 8388608,
+	Animated = 1 << 24
 };
 
 export enum OtbmNodeType {
@@ -944,4 +945,45 @@ export enum ItemGroup {
 	ITEM_GROUP_DEPRECATED,
 
 	ITEM_GROUP_LAST
+};
+
+export enum ClientFluidTypes {
+	CLIENTFLUID_EMPTY = 0,
+	CLIENTFLUID_BLUE = 1,
+	CLIENTFLUID_PURPLE = 2,
+	CLIENTFLUID_BROWN_1 = 3,
+	CLIENTFLUID_BROWN_2 = 4,
+	CLIENTFLUID_RED = 5,
+	CLIENTFLUID_GREEN = 6,
+	CLIENTFLUID_BROWN = 7,
+	CLIENTFLUID_YELLOW = 8,
+	CLIENTFLUID_WHITE = 9,
+};
+
+export const FluidMap = [
+	ClientFluidTypes.CLIENTFLUID_EMPTY,
+	ClientFluidTypes.CLIENTFLUID_BLUE,
+	ClientFluidTypes.CLIENTFLUID_RED,
+	ClientFluidTypes.CLIENTFLUID_BROWN_1,
+	ClientFluidTypes.CLIENTFLUID_GREEN,
+	ClientFluidTypes.CLIENTFLUID_YELLOW,
+	ClientFluidTypes.CLIENTFLUID_WHITE,
+	ClientFluidTypes.CLIENTFLUID_PURPLE,
+];
+
+export enum CreatureType {
+	CREATURETYPE_PLAYER = 0,
+	CREATURETYPE_MONSTER = 1,
+	CREATURETYPE_NPC = 2,
+	CREATURETYPE_SUMMON_OWN = 3,
+	CREATURETYPE_SUMMON_OTHERS = 4,
+};
+
+export enum GuildEmblem {
+	GUILDEMBLEM_NONE = 0,
+	GUILDEMBLEM_ALLY = 1,
+	GUILDEMBLEM_ENEMY = 2,
+	GUILDEMBLEM_NEUTRAL = 3,
+	GUILDEMBLEM_MEMBER = 4,
+	GUILDEMBLEM_OTHER = 5,
 };
