@@ -7,13 +7,14 @@ import { CylinderLink } from './enums';
 import { Tile } from './Tile';
 import { Item } from './Item';
 import { models, ObjectId } from './db';
+import { Outfit, OutfitInterface } from './Outfit';
+import { CreatureType, GuildEmblem } from './enums';
 
 import { g_map } from './otserv';
 
 export class Player extends Creature {
 	public static playerAutoID: number = 0x10000000;
 
-	id: number = 0; // temp
 	public dbID: ObjectId;
 
 	public vocation: Vocation = new Vocation();
@@ -68,7 +69,8 @@ export class Player extends Creature {
 		player.manaSpent = databaseObject.manaSpent;
 
 		player.onlineTime = databaseObject.onlineTime;
-		// player.outfit = new Outfit;
+		const outfit = new Outfit(<OutfitInterface>databaseObject.outfit);
+		player.setOutfit(outfit);
 		player.position = new Position(databaseObject.position.x, databaseObject.position.y, databaseObject.position.z)
 		player.soul = databaseObject.soul;
 		player.stamina = databaseObject.stamina;
@@ -93,6 +95,10 @@ export class Player extends Creature {
 	}
 
 	public canWalkthrough(creature: Creature): boolean {
+		return false;
+	}
+
+	public canWalkthroughEx(creature: Creature): boolean {
 		return false;
 	}
 
@@ -128,5 +134,46 @@ export class Player extends Creature {
 		const playerPos = this.getPosition();
 		const tile = g_map.getTile(playerPos);
 		return tile;
+	}
+
+	public getCreature() {
+		return this;
+	}
+
+	public getType(): CreatureType {
+		return CreatureType.CREATURETYPE_PLAYER;
+	}
+
+	public getGuildEmblem(player: Player): GuildEmblem {
+		if (!player) {
+			return GuildEmblem.GUILDEMBLEM_NONE;
+		}
+
+		// const playerGuild = player.getGuild();
+		// if (!playerGuild) {
+		// 	return GuildEmblem.GUILDEMBLEM_NONE;
+		// }
+
+		// if (player.getGuildWarVector().empty()) {
+		// 	if (guild == playerGuild) {
+		// 		return GuildEmblem.GUILDEMBLEM_MEMBER;
+		// 	} else {
+		// 		return GuildEmblem.GUILDEMBLEM_OTHER;
+		// 	}
+		// } else if (guild == playerGuild) {
+		// 	return GuildEmblem.GUILDEMBLEM_ALLY;
+		// } else if (this.isInWar(player)) {
+		// 	return GuildEmblem.GUILDEMBLEM_ENEMY;
+		// }
+
+		return GuildEmblem.GUILDEMBLEM_NEUTRAL;
+	}
+
+	public getHelpers(): number {
+		return 0;
+	}
+
+	public isInWar(player: Player): boolean {
+		return false;
 	}
 }
