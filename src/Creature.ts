@@ -5,13 +5,13 @@ import { Player } from './Player';
 import { Monster } from './Monster';
 import { Tile } from './Tile';
 import { Item, ItemType } from './Item';
-import { CombatType, ConditionType } from './enums';
+import { CombatType, ConditionType, CreatureType } from './enums';
 
 export class Creature extends Thing {
 	protected id: number = 0;
 	public name: string = '';
 	public position: Position = new Position(0, 0, 0);
-	public outfit: Outfit = new Outfit("default", 0, 0);
+	private outfit: Outfit = new Outfit();
 
 	public isPlayer: boolean = false;
 
@@ -41,7 +41,7 @@ export class Creature extends Thing {
 	}
 
 	public canSeeCreature(creature: Creature): boolean {
-		return false;
+		return true;
 	}
 
 	public getPlayer(): Player {
@@ -86,5 +86,21 @@ export class Creature extends Thing {
 
 	public onAddTileItem(tile: Tile, pos: Position): void {
 
+	}
+
+	public isHealthHidden(): boolean {
+		return false;
+	}
+
+	public getType(): CreatureType {
+		return CreatureType.CREATURETYPE_MONSTER;
+	}
+
+	public getCurrentOutfit(): Outfit {
+		return this.outfit;
+	}
+
+	public setOutfit(outfit: Outfit): void {
+		this.outfit = outfit;
 	}
 }

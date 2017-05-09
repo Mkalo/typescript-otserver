@@ -1,7 +1,7 @@
 import { XTEA } from "../xtea";
 import { NetworkMessage, OutputMessage } from "../networkMessage";
 import { g_rsa, g_config, g_game } from '../otserv';
-import { GameState } from '../enums';
+import { GameState, CreatureType } from '../enums';
 import { Protocol } from './protocol';
 import * as crypto from 'crypto';
 import { AuthService, IPService } from '../services';
@@ -9,9 +9,13 @@ import { Position } from '../Position';
 import { Creature } from '../Creature';
 import { Player } from '../Player';
 import { LightInfo } from '../LightInfo';
-import { dumpedMapPacket1, dumpedMapPacket2 } from '../dumpedMapPacket';
 import { numberToHexString } from '../utils';
+import { Tile } from '../Tile';
+import { g_map } from '../otserv';
+import { unordered_set } from 'tstl';
+import { Outfit } from '../Outfit';
 
+const MAP_MAX_LAYERS = 16;
 
 class GameClientInfo {
 	public operatingSystem: number;
@@ -35,6 +39,7 @@ export class ProtocolGame extends Protocol {
 
 	private player: Player = null;
 
+	private knownCreatureSet: unordered_set<number> = new unordered_set<number>();
 	private packetsReadyToSend: OutputMessage[] = [];
 
 	constructor(arg: any) {
@@ -181,28 +186,28 @@ export class ProtocolGame extends Protocol {
 			case 0x1E: this.receivePing(); break;
 			// case 0x32: parseExtendedOpcode(msg); break; //otclient extended opcode
 			// case 0x64: parseAutoWalk(msg); break;
-			// case 0x65: addGameTask(&Game::playerMove, player->getID(), DIRECTION_NORTH); break;
-			// case 0x66: addGameTask(&Game::playerMove, player->getID(), DIRECTION_EAST); break;
-			// case 0x67: addGameTask(&Game::playerMove, player->getID(), DIRECTION_SOUTH); break;
-			// case 0x68: addGameTask(&Game::playerMove, player->getID(), DIRECTION_WEST); break;
-			// case 0x69: addGameTask(&Game::playerStopAutoWalk, player->getID()); break;
-			// case 0x6A: addGameTask(&Game::playerMove, player->getID(), DIRECTION_NORTHEAST); break;
-			// case 0x6B: addGameTask(&Game::playerMove, player->getID(), DIRECTION_SOUTHEAST); break;
-			// case 0x6C: addGameTask(&Game::playerMove, player->getID(), DIRECTION_SOUTHWEST); break;
-			// case 0x6D: addGameTask(&Game::playerMove, player->getID(), DIRECTION_NORTHWEST); break;
-			// case 0x6F: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player->getID(), DIRECTION_NORTH); break;
-			// case 0x70: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player->getID(), DIRECTION_EAST); break;
-			// case 0x71: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player->getID(), DIRECTION_SOUTH); break;
-			// case 0x72: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player->getID(), DIRECTION_WEST); break;
+			// case 0x65: addGameTask(&Game::playerMove, player.getID(), DIRECTION_NORTH); break;
+			// case 0x66: addGameTask(&Game::playerMove, player.getID(), DIRECTION_EAST); break;
+			// case 0x67: addGameTask(&Game::playerMove, player.getID(), DIRECTION_SOUTH); break;
+			// case 0x68: addGameTask(&Game::playerMove, player.getID(), DIRECTION_WEST); break;
+			// case 0x69: addGameTask(&Game::playerStopAutoWalk, player.getID()); break;
+			// case 0x6A: addGameTask(&Game::playerMove, player.getID(), DIRECTION_NORTHEAST); break;
+			// case 0x6B: addGameTask(&Game::playerMove, player.getID(), DIRECTION_SOUTHEAST); break;
+			// case 0x6C: addGameTask(&Game::playerMove, player.getID(), DIRECTION_SOUTHWEST); break;
+			// case 0x6D: addGameTask(&Game::playerMove, player.getID(), DIRECTION_NORTHWEST); break;
+			// case 0x6F: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player.getID(), DIRECTION_NORTH); break;
+			// case 0x70: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player.getID(), DIRECTION_EAST); break;
+			// case 0x71: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player.getID(), DIRECTION_SOUTH); break;
+			// case 0x72: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerTurn, player.getID(), DIRECTION_WEST); break;
 			// case 0x78: parseThrow(msg); break;
 			// case 0x79: parseLookInShop(msg); break;
 			// case 0x7A: parsePlayerPurchase(msg); break;
 			// case 0x7B: parsePlayerSale(msg); break;
-			// case 0x7C: addGameTask(&Game::playerCloseShop, player->getID()); break;
+			// case 0x7C: addGameTask(&Game::playerCloseShop, player.getID()); break;
 			// case 0x7D: parseRequestTrade(msg); break;
 			// case 0x7E: parseLookInTrade(msg); break;
-			// case 0x7F: addGameTask(&Game::playerAcceptTrade, player->getID()); break;
-			// case 0x80: addGameTask(&Game::playerCloseTrade, player->getID()); break;
+			// case 0x7F: addGameTask(&Game::playerAcceptTrade, player.getID()); break;
+			// case 0x80: addGameTask(&Game::playerCloseTrade, player.getID()); break;
 			// case 0x82: parseUseItem(msg); break;
 			// case 0x83: parseUseItemEx(msg); break;
 			// case 0x84: parseUseWithCreature(msg); break;
@@ -215,11 +220,11 @@ export class ProtocolGame extends Protocol {
 			// case 0x8D: parseLookInBattleList(msg); break;
 			// case 0x8E: /* join aggression */ break;
 			// case 0x96: parseSay(msg); break;
-			// case 0x97: addGameTask(&Game::playerRequestChannels, player->getID()); break;
+			// case 0x97: addGameTask(&Game::playerRequestChannels, player.getID()); break;
 			// case 0x98: parseOpenChannel(msg); break;
 			// case 0x99: parseCloseChannel(msg); break;
 			// case 0x9A: parseOpenPrivateChannel(msg); break;
-			// case 0x9E: addGameTask(&Game::playerCloseNpcChannel, player->getID()); break;
+			// case 0x9E: addGameTask(&Game::playerCloseNpcChannel, player.getID()); break;
 			// case 0xA0: parseFightModes(msg); break;
 			// case 0xA1: parseAttack(msg); break;
 			// case 0xA2: parseFollow(msg); break;
@@ -227,17 +232,17 @@ export class ProtocolGame extends Protocol {
 			// case 0xA4: parseJoinParty(msg); break;
 			// case 0xA5: parseRevokePartyInvite(msg); break;
 			// case 0xA6: parsePassPartyLeadership(msg); break;
-			// case 0xA7: addGameTask(&Game::playerLeaveParty, player->getID()); break;
+			// case 0xA7: addGameTask(&Game::playerLeaveParty, player.getID()); break;
 			// case 0xA8: parseEnableSharedPartyExperience(msg); break;
-			// case 0xAA: addGameTask(&Game::playerCreatePrivateChannel, player->getID()); break;
+			// case 0xAA: addGameTask(&Game::playerCreatePrivateChannel, player.getID()); break;
 			// case 0xAB: parseChannelInvite(msg); break;
 			// case 0xAC: parseChannelExclude(msg); break;
-			// case 0xBE: addGameTask(&Game::playerCancelAttackAndFollow, player->getID()); break;
+			// case 0xBE: addGameTask(&Game::playerCancelAttackAndFollow, player.getID()); break;
 			// case 0xC9: /* update tile */ break;
 			// case 0xCA: parseUpdateContainer(msg); break;
 			// case 0xCB: parseBrowseField(msg); break;
 			// case 0xCC: parseSeekInContainer(msg); break;
-			// case 0xD2: addGameTask(&Game::playerRequestOutfit, player->getID()); break;
+			// case 0xD2: addGameTask(&Game::playerRequestOutfit, player.getID()); break;
 			// case 0xD3: parseSetOutfit(msg); break;
 			// case 0xD4: parseToggleMount(msg); break;
 			// case 0xDC: parseAddVip(msg); break;
@@ -246,7 +251,7 @@ export class ProtocolGame extends Protocol {
 			// case 0xE6: parseBugReport(msg); break;
 			// case 0xE7: /* thank you */ break;
 			// case 0xE8: parseDebugAssert(msg); break;
-			// case 0xF0: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerShowQuestLog, player->getID()); break;
+			// case 0xF0: addGameTaskTimed(DISPATCHER_TASK_EXPIRATION, &Game::playerShowQuestLog, player.getID()); break;
 			// case 0xF1: parseQuestLine(msg); break;
 			// case 0xF2: /* rule violation report */ break;
 			// case 0xF3: /* get object info */ break;
@@ -270,26 +275,26 @@ export class ProtocolGame extends Protocol {
 		if (!this.player.isRemoved()) {
 			if (!forced) {
 				if (!this.player.isAccessPlayer()) {
-					// if (player ->getTile() ->hasFlag(TILESTATE_NOLOGOUT)) {
-					// 	player.sendCancelMessage(RETURNVALUE_YOUCANNOTLOGOUTHERE);
+					// if (this.player.getTile().hasFlag(TILESTATE_NOLOGOUT)) {
+					// 	this.player.sendCancelMessage(RETURNVALUE_YOUCANNOTLOGOUTHERE);
 					// 	return;
 					// }
 
-					// if (!player ->getTile() ->hasFlag(TILESTATE_PROTECTIONZONE) && player ->hasCondition(CONDITION_INFIGHT)) {
-					// 	player.sendCancelMessage(RETURNVALUE_YOUMAYNOTLOGOUTDURINGAFIGHT);
+					// if (!this.player.getTile().hasFlag(TILESTATE_PROTECTIONZONE) && this.player.hasCondition(CONDITION_INFIGHT)) {
+					// 	this.player.sendCancelMessage(RETURNVALUE_YOUMAYNOTLOGOUTDURINGAFIGHT);
 					// 	return;
 					// }
 				}
 
 				//scripting event - onLogout
-				// if (!g_creatureEvents ->playerLogout(player)) {
+				// if (!g_creatureEvents .playerLogout(player)) {
 				// 	//Let the script handle the error message
 				// 	return;
 				// }
 			}
 
 			if (displayEffect && this.player.health > 0) {
-				// g_game.addMagicEffect(player ->getPosition(), CONST_ME_POFF);
+				// g_game.addMagicEffect(player .getPosition(), CONST_ME_POFF);
 			}
 		}
 
@@ -348,6 +353,8 @@ export class ProtocolGame extends Protocol {
 		// 	// return this.disconnectClient('logged out...');
 		// }, 3000);
 		this.player.lastLogin = new Date();
+		const tile = g_map.getTile(this.player.position); // FOR NOW
+		tile.addThing(this.player);
 		return this.sendAddCreature(this.player, this.player.position, 0, false);
 	}
 
@@ -384,7 +391,6 @@ export class ProtocolGame extends Protocol {
 		if (isLogin) {
 			this.sendMagicEffect(pos, 11);
 		}
-
 
 		// sendInventoryItem
 
@@ -427,18 +433,243 @@ export class ProtocolGame extends Protocol {
 
 	private sendMapDescription(pos: Position) {
 		const msg = new OutputMessage();
-		dumpedMapPacket1.forEach(n => msg.addUInt8(n));
-		msg.addUInt32(this.player.getID());
-		dumpedMapPacket2.forEach(n => msg.addUInt8(n));
-		// msg.addUInt8(0x64);
+		msg.addUInt8(0x64);
+		msg.addPosition(pos);
 
-		// add position
-		// msg.addUInt16(pos.x);
-		// msg.addUInt16(pos.y);
-		// msg.addUInt8(pos.z);
-
+		this.getMapDescription(msg, pos.x - 8, pos.y - 6, pos.z);
+		// console.log(msg.toString());
+		// [100,250,3,254,3,7,86,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,97,0,0,0,0,0,0,0,0,16,0,9,0,84,111,109,101,107,32,68,119,97,100,2,148,0,0,0,0,0,0,0,0,255,198,238,2,0,0,0,0,0,255,0,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,4,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,0,255,0,0,255,255,255,255,255,255,255,255,255,255,255,255,255,255,1,255].forEach((b) => {
+		// 	msg.addUInt8(b);
+		// })
 		this.writeToOutputBuffer(msg);
 	}
+
+	private getMapDescription(msg: OutputMessage, x: number, y: number, z: number, width: number = 18, height: number = 14) {
+		// int32_t skip = -1;
+		const skip = {
+			value: -1
+		};
+		let startz = 7;
+		let endz = 0;
+		let zstep = -1;
+
+		if (z > 7) {
+			startz = z - 2;
+			endz = Math.min(MAP_MAX_LAYERS - 1, z + 2);
+			zstep = 1;
+		}
+
+		for (let nz = startz; nz !== endz + zstep; nz += zstep) {
+			this.getFloorDescription(msg, x, y, nz, width, height, z - nz, skip);
+		}
+
+		if (skip.value >= 0) {
+			msg.addByte(skip.value);
+			msg.addByte(0xFF);
+		}
+	}
+
+	private getFloorDescription(msg: OutputMessage, x: number, y: number, z: number, width: number, height: number, offset: number, skip: { value: number }): void {
+		for (let nx = 0; nx < width; nx++) {
+			for (let ny = 0; ny < height; ny++) {
+				const tile = g_map.getTile(x + nx + offset, y + ny + offset, z);
+				if (tile) {
+					if (skip.value >= 0) {
+						msg.addByte(skip.value);
+						msg.addByte(0xFF);
+					}
+
+					skip.value = 0;
+					this.getTileDescription(msg, tile);
+				} else if (skip.value === 0xFE) {
+					msg.addByte(0xFF);
+					msg.addByte(0xFF);
+					skip.value = -1;
+				} else {
+					++skip.value;
+				}
+			}
+		}
+	}
+
+	public getTileDescription(msg: OutputMessage, tile: Tile) {
+		msg.addUInt16(0x00); //environmental effects
+
+		let count = 0;
+		const ground = tile.getGround();
+		if (ground) {
+			msg.addItem(ground);
+			count = 1;
+		}
+
+		const items = tile.getItemList();
+		if (items && items.size()) {
+			for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it !== end; it = it.next()) {
+				msg.addItem(it.value);
+
+				if (++count === 10) {
+					return;
+				}
+			}
+		}
+
+		const creatures = tile.getCreatures();
+		if (creatures && creatures.size()) {
+
+			// for (const Creature* creature : boost::adaptors::reverse(*creatures)) {
+			for (let it = creatures.rbegin(), end = creatures.rend(); !!it.value; it = it.next()) {
+				const creature = it.value;
+				if (!creature)
+					break;
+				if (!this.player.canSeeCreature(creature)) {
+					continue;
+				}
+
+				const known = { value: false };
+				const removedKnown = { value: -1 };
+				this.checkCreatureAsKnown(creature.getID(), known, removedKnown);
+				this.addCreature(msg, creature, known, removedKnown);
+
+				if (++count === 10) {
+					return;
+				}
+			}
+		}
+
+		if (items && items.size()) {
+			for (let it = items.getBeginDownItem(), end = items.getEndDownItem(); it != end; it = it.next()) {
+				msg.addItem(it.value);
+
+				if (++count == 10) {
+					return;
+				}
+			}
+		}
+	}
+
+	public checkCreatureAsKnown(id: number, known: { value: boolean }, removedKnown: { value: number }): void {
+		const result = this.knownCreatureSet.insert(id);
+		if (!result.second) {
+			known.value = true;
+			return;
+		}
+
+		known.value = false;
+
+		if (this.knownCreatureSet.size() > 1300) {
+			// Look for a creature to remove
+			for (let it = this.knownCreatureSet.begin(), end = this.knownCreatureSet.end(); it != end; it = it.next()) {
+				throw Error('TO DO');
+				// const creature = g_game.getCreatureByID(*it);
+				// if (!this.canSee(creature)) {
+				// 	removedKnown.value = it.value;
+				// 	this.knownCreatureSet.erase(it);
+				// 	return;
+				// }
+			}
+
+			// Bad situation. Let's just remove anyone.
+			let it = this.knownCreatureSet.begin();
+			if (it.value === id) {
+				it = it.next();
+			}
+
+			removedKnown.value = it.value;
+			this.knownCreatureSet.erase(it);
+		} else {
+			removedKnown.value = 0;
+		}
+	}
+
+	public addCreature(msg: OutputMessage, creature: Creature, known: { value: boolean }, remove: { value: number }) {
+		let creatureType = creature.getType();
+
+		const otherPlayer = creature.getPlayer();
+
+		if (known.value) {
+			msg.addUInt16(0x62);
+			msg.addUInt32(creature.getID());
+		} else {
+			msg.addUInt16(0x61);
+			msg.addUInt32(remove.value);
+			msg.addUInt32(creature.getID());
+			msg.addByte(creatureType);
+			msg.addString(creature.name);
+		}
+
+		if (creature.isHealthHidden()) {
+			msg.addByte(0x00);
+		} else {
+			msg.addUInt8(Math.floor(creature.health / (creature.maxHealth / 100)));
+		}
+
+		msg.addUInt8(0); // msg.addByte(creature.getDirection());
+
+		if (!creature.isInGhostMode() && !creature.isInvisible()) {
+			this.addOutfit(msg, creature.getCurrentOutfit());
+		} else {
+			const outfit = new Outfit();
+			this.addOutfit(msg, outfit);
+		}
+
+		const lightInfo = new LightInfo();
+		// creature.getCreatureLight(lightInfo);
+		msg.addByte(this.player.isAccessPlayer() ? 0xFF : lightInfo.level);
+		msg.addByte(lightInfo.color);
+
+		msg.addUInt16(1500 / 2); // msg.addUInt16(creature.getStepSpeed() / 2);
+
+		msg.addUInt8(0); // msg.addByte(player.getSkullClient(creature));
+		msg.addUInt8(0); // msg.addByte(player.getPartyShield(otherPlayer));
+
+		if (!known.value) {
+			msg.addByte(this.player.getGuildEmblem(otherPlayer));
+		}
+
+		// if (creatureType === CreatureType.CREATURETYPE_MONSTER) {
+		// 	const master = creature.getMaster();
+		// 	if (master) {
+		// 		const masterPlayer = master.getPlayer();
+		// 		if (masterPlayer) {
+		// 			if (masterPlayer === this.player) {
+		// 				creatureType = CreatureType.CREATURETYPE_SUMMON_OWN;
+		// 			} else {
+		// 				creatureType = CreatureType.CREATURETYPE_SUMMON_OTHERS;
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		msg.addByte(creatureType); // Type (for summons)
+		msg.addUInt8(0); // msg.addByte(creature.getSpeechBubble());
+		msg.addByte(0xFF); // MARK_UNMARKED
+
+		if (otherPlayer) {
+			msg.addUInt16(otherPlayer.getHelpers());
+		} else {
+			msg.addUInt16(0x00);
+		}
+
+		msg.addByte(this.player.canWalkthroughEx(creature) ? 0x00 : 0x01);
+	}
+
+	public addOutfit(msg: OutputMessage, outfit: Outfit) {
+		msg.addUInt16(outfit.type);
+
+		if (outfit.type !== 0) {
+			msg.addByte(outfit.head);
+			msg.addByte(outfit.body);
+			msg.addByte(outfit.legs);
+			msg.addByte(outfit.feet);
+			msg.addByte(outfit.addons);
+		} else {
+			throw Error("TO DO");
+			// msg.addItemId(outfit.lookTypeEx);
+		}
+
+		msg.addUInt16(outfit.mount);
+	}
+
 
 	private sendSkills() {
 		const msg = new OutputMessage();
@@ -446,9 +677,9 @@ export class ProtocolGame extends Protocol {
 		msg.addByte(0xA1);
 
 		for (let i = 0; i <= 6; ++i) {// for (let i = SKILL_FIRST; i <= SKILL_LAST; ++i) {
-			msg.addUInt16(0);// msg.addUInt16(std::min<int32_t>(player ->getSkillLevel(i), std::numeric_limits<uint16_t>::max()));
-			msg.addUInt16(0);// msg.addUInt16(player ->getBaseSkill(i));
-			msg.addUInt8(0);// msg.addUInt8(player ->getSkillPercent(i));
+			msg.addUInt16(0);// msg.addUInt16(std::min<int32_t>(player .getSkillLevel(i), std::numeric_limits<uint16_t>::max()));
+			msg.addUInt16(0);// msg.addUInt16(player .getBaseSkill(i));
+			msg.addUInt8(0);// msg.addUInt8(player .getSkillPercent(i));
 		}
 
 		// critical chance
@@ -482,16 +713,16 @@ export class ProtocolGame extends Protocol {
 
 		msg.addByte(0xA0);
 
-		msg.addUInt16(this.player.health); // msg.addUInt16(std::min<int32_t>(player ->getHealth(), std::numeric_limits<uint16_t>::max()));
-		msg.addUInt16(this.player.maxHealth); // msg.addUInt16(std::min<int32_t>(player ->getMaxHealth(), std::numeric_limits<uint16_t>::max()));
+		msg.addUInt16(this.player.health); // msg.addUInt16(std::min<int32_t>(player .getHealth(), std::numeric_limits<uint16_t>::max()));
+		msg.addUInt16(this.player.maxHealth); // msg.addUInt16(std::min<int32_t>(player .getMaxHealth(), std::numeric_limits<uint16_t>::max()));
 
-		msg.addUInt32(0); // msg.addUInt32(player ->getFreeCapacity());
-		msg.addUInt32(0); // msg.addUInt32(player ->getCapacity());
+		msg.addUInt32(0); // msg.addUInt32(player .getFreeCapacity());
+		msg.addUInt32(0); // msg.addUInt32(player .getCapacity());
 
-		msg.addUInt32(0); msg.addUInt32(0); // msg.add<uint64_t>(player ->getExperience());
+		msg.addUInt32(0); msg.addUInt32(0); // msg.add<uint64_t>(player .getExperience());
 
-		msg.addUInt16(0); // msg.addUInt16(player ->getLevel());
-		msg.addUInt8(0); // msg.addByte(player ->getLevelPercent());
+		msg.addUInt16(0); // msg.addUInt16(player .getLevel());
+		msg.addUInt8(0); // msg.addByte(player .getLevelPercent());
 
 		msg.addUInt16(100); // base xp gain rate
 		msg.addUInt16(0); // xp voucher
@@ -499,23 +730,23 @@ export class ProtocolGame extends Protocol {
 		msg.addUInt16(0); // xp boost
 		msg.addUInt16(100); // stamina multiplier (100 = x1.0)
 
-		msg.addUInt16(0); // msg.addUInt16(std::min<int32_t>(player ->getMana(), std::numeric_limits<uint16_t>::max()));
-		msg.addUInt16(0); // msg.addUInt16(std::min<int32_t>(player ->getMaxMana(), std::numeric_limits<uint16_t>::max()));
+		msg.addUInt16(0); // msg.addUInt16(std::min<int32_t>(player .getMana(), std::numeric_limits<uint16_t>::max()));
+		msg.addUInt16(0); // msg.addUInt16(std::min<int32_t>(player .getMaxMana(), std::numeric_limits<uint16_t>::max()));
 
-		msg.addUInt8(0); // msg.addByte(std::min<uint32_t>(player ->getMagicLevel(), std::numeric_limits<uint8_t>::max()));
-		msg.addUInt8(0); // msg.addByte(std::min<uint32_t>(player ->getBaseMagicLevel(), std::numeric_limits<uint8_t>::max()));
-		msg.addUInt8(0); // msg.addByte(player ->getMagicLevelPercent());
+		msg.addUInt8(0); // msg.addByte(std::min<uint32_t>(player .getMagicLevel(), std::numeric_limits<uint8_t>::max()));
+		msg.addUInt8(0); // msg.addByte(std::min<uint32_t>(player .getBaseMagicLevel(), std::numeric_limits<uint8_t>::max()));
+		msg.addUInt8(0); // msg.addByte(player .getMagicLevelPercent());
 
-		msg.addUInt8(0); // msg.addByte(player ->getSoul());
+		msg.addUInt8(0); // msg.addByte(player .getSoul());
 
-		msg.addUInt16(0); // msg.addUInt16(player ->getStaminaMinutes());
+		msg.addUInt16(0); // msg.addUInt16(player .getStaminaMinutes());
 
-		msg.addUInt16(0); // msg.addUInt16(player ->getBaseSpeed() / 2);
+		msg.addUInt16(0); // msg.addUInt16(player .getBaseSpeed() / 2);
 
-		// Condition * condition = player ->getCondition(CONDITION_REGENERATION);
-		msg.addUInt16(0); // msg.addUInt16(condition ? condition ->getTicks() / 1000 : 0x00);
+		// Condition * condition = player .getCondition(CONDITION_REGENERATION);
+		msg.addUInt16(0); // msg.addUInt16(condition ? condition .getTicks() / 1000 : 0x00);
 
-		msg.addUInt16(0); // msg.addUInt16(player ->getOfflineTrainingTime() / 60 / 1000);
+		msg.addUInt16(0); // msg.addUInt16(player .getOfflineTrainingTime() / 60 / 1000);
 
 		msg.addUInt16(0); // xp boost time (seconds)
 		msg.addByte(0); // enables exp boost in the store
@@ -566,7 +797,7 @@ export class ProtocolGame extends Protocol {
 			msg.addUInt8(0);
 			msg.addUInt32(0);
 		}
-		msg.addUInt8(0); // msg.addByte(player ->getVocation() ->getClientId());
+		msg.addUInt8(0); // msg.addByte(player .getVocation() .getClientId());
 		msg.addUInt16(0xFF); // number of known spells
 		for (let spellId = 0x00; spellId < 0xFF; spellId++) {
 			msg.addUInt8(spellId);
