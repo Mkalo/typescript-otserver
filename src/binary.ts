@@ -230,5 +230,21 @@ export class Binary {
 		this.addUInt16(size);
 		this.position += this.dataBuffer.write(value, this.position, value.length);
 	}
+
+	public toString(): string {
+		let str = "[";
+		const buffer = this.getBuffer();
+
+		for (let i = 0, len = buffer.length; i < len; i++) {
+			const byte = buffer[i];
+			str += byte.toString();
+			if (i < len -1)
+				str += ",";
+		}
+
+		str += "]";
+
+		return str;
+	}
 	
 }
