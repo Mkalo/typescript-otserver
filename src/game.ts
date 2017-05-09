@@ -46,4 +46,33 @@ export class Game {
 
 	}
 
+	public addUniqueItem(uniqueId: number, item: Item): boolean {
+		// TO DO
+		return true;
+		// auto result = uniqueItems.emplace(uniqueId, item);
+		// if (!result.second) {
+		// 	std::cout << "Duplicate unique id: " << uniqueId << std::endl;
+		// }
+		// return result.second;
+	}
+
+	public startDecay(item: Item): void {
+		// if (!item || !item.canDecay()) {
+		// 	return;
+		// }
+
+		// const decayState = item.getDecaying();
+		// if (decayState === DECAYING_TRUE) {
+		// 	return;
+		// }
+
+		// if (item.getDuration() > 0) {
+		// 	item.incrementReferenceCounter();
+		// 	item.setDecaying(DECAYING_TRUE);
+		// 	toDecayItems.push_front(item);
+		// } else {
+		// 	internalDecayItem(item);
+		// }
+	}
+
 }

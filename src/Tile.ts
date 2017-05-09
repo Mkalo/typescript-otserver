@@ -76,11 +76,11 @@ export class TileItemVector extends vector<Item> {
 
 export class Tile extends Cylinder {
 
-	public isProtectionZone: boolean = false;
-	public isNoPvpZone: boolean = false;
-	public isPvpZone: boolean = false;
-	public isNoLogoutZone: boolean = false;
-	public isRefreshZone: boolean = false;
+	// public isProtectionZone: boolean = false;
+	// public isNoPvpZone: boolean = false;
+	// public isPvpZone: boolean = false;
+	// public isNoLogoutZone: boolean = false;
+	// public isRefreshZone: boolean = false;
 	public houseID: number;
 	public ground: Item = null;
 
@@ -323,7 +323,7 @@ export class Tile extends Cylinder {
 		if (items) {
 			// for (auto it = ItemVector::const_reverse_iterator(items.getEndTopItem()), end = ItemVector::const_reverse_iterator(items.getBeginTopItem()); it != end; ++it) {
 			for (let it = items.getEndTopItem(), end = items.getBeginTopItem(); it !== end; it = it.prev()) {
-				if (it.value.itemType.topOrder === topOrder)
+				if (it.value.itemType.alwaysOnTopOrder === topOrder)
 					return it.value;
 			}
 		}
@@ -962,7 +962,7 @@ export class Tile extends Cylinder {
 					// for (let it of items) {
 					for (let it = items.getBeginTopItem(), end = items.getEndTopItem(); it !== end; it = it.next()) {
 						//Note: this is different from internalAddThing
-						if (itemType.topOrder <= it.value.itemType.topOrder) {
+						if (itemType.alwaysOnTopOrder <= it.value.itemType.alwaysOnTopOrder) {
 							items.insert(it, item);
 							isInserted = true;
 							break;

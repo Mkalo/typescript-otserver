@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Item } from './Item';
 import { FileLoader, Node, PropertyReader } from './fileLoader';
-import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlag } from './enums';
+import { OtbmNodeType, OtbmAttribute, ItemGroup, TileFlag, TileFlags } from './enums';
 import { WorldMap } from './worldMap';
 import { Town } from './Town';
 import { Tile } from './Tile';
@@ -124,12 +124,19 @@ export class OTBMLoader {
 			if (nodeTile.type === OtbmNodeType.Tile || nodeTile.type === OtbmNodeType.HouseTile) {
 				fileLoader.getProps(nodeTile, props);
 
-				const tile: Tile = new Tile();
-				const tilePosition: Position = new Position(baseX + props.readUInt8(), baseY + props.readUInt8(), baseZ);
-				tile.setPosition(tilePosition);
+				let isHouseTile = false;
+				let tile: Tile = null;
+				let groundItem: Item = null;
 
-				if (nodeTile.type === OtbmNodeType.HouseTile)
+				let tileFlags: TileFlag = TileFlag.None;
+				const tilePosition: Position = new Position(baseX + props.readUInt8(), baseY + props.readUInt8(), baseZ);
+				// tile.setPosition(tilePosition);
+
+				if (nodeTile.type === OtbmNodeType.HouseTile) {
 					tile.houseID = props.readUInt32();
+					isHouseTile = true;
+					// add house somewhere
+				}
 
 				while (props.canRead(1)) {
 					const attribute = props.readUInt8();
@@ -138,31 +145,57 @@ export class OTBMLoader {
 						case OtbmAttribute.TileFlags: {
 							const flags = props.readUInt32();
 							if ((flags & TileFlag.ProtectionZone) == TileFlag.ProtectionZone) {
-								tile.isProtectionZone = true;
+								tileFlags |= TileFlags.TILESTATE_PROTECTIONZONE;
 							}
 							else if ((flags & TileFlag.NoPvpZone) == TileFlag.NoPvpZone) {
-								tile.isNoPvpZone = true;
+								tileFlags |= TileFlags.TILESTATE_NOPVPZONE;
 							}
 							else if ((flags & TileFlag.PvpZone) == TileFlag.PvpZone) {
-								tile.isPvpZone = true;
+								tileFlags |= TileFlags.TILESTATE_PVPZONE;
 							}
 
 							if ((flags & TileFlag.NoLogout) == TileFlag.NoLogout) {
-								tile.isNoLogoutZone = true;
+								tileFlags |= TileFlags.TILESTATE_NOLOGOUT;
 							}
 
-							if ((flags & TileFlag.Refresh) == TileFlag.Refresh) {
-								// TODO: Warn about house
-								tile.isRefreshZone = true;
-							}
 							break;
 						} case OtbmAttribute.Item: {
 							const itemId = props.readUInt16();
-							const item = Item.create(itemId);
+							let item = Item.create(itemId);
 
-							// TODO: if isHouseTile && !item.Info.IsMoveable
+							if (!item) {
+								console.error('Failed to create item');
+								return false;
+							}
 
-							tile.addThing(item);
+							if (isHouseTile && item.isMoveable()) {
+								const houseId = -1; // house.getId();
+								console.log(`[Warning - IOMap::loadMap] Moveable item with ID: ${item.getID()}, in house: ${houseId}, at position ${tilePosition.toString()}.`);
+								item = null;
+							} else {
+								if (item.getItemCount() <= 0) {
+									item.setItemCount(1);
+								}
+
+								if (tile) {
+									tile.internalAddThing(item);
+									item.startDecaying();
+									item.setLoadedFromMap(true);
+								} else if (item.isGround()) {
+									groundItem = null;
+									groundItem = item;
+								} else {
+									tile = new Tile(); // CHANGE IT THERE AFTER STATIC TILE AND OTHER THINGS IMPLEMENTATION
+									tile.setGround(groundItem);
+									tile.addThing(item);
+									tile.setPosition(tilePosition);
+
+									tile.internalAddThing(item);
+									item.startDecaying();
+									item.setLoadedFromMap(true);
+								}
+							}
+							
 							break;
 						} default: {
 							return false;
@@ -172,18 +205,56 @@ export class OTBMLoader {
 				let nodeItem: Node = nodeTile.child;
 
 				while (nodeItem) {
-					if (nodeItem.type !== OtbmNodeType.Item)
+					if (nodeItem.type !== OtbmNodeType.Item) {
+						console.log(`${tilePosition.toString()} Unknown node type.`);
 						return false;
+					}
 
 					if (!fileLoader.getProps(nodeItem, props))
 						return false;
 
 					const itemId = props.readUInt16();
-					const item = Item.create(itemId);
-					tile.addThing(item);
+					let item = Item.create(itemId);
+					// tile.addThing(item);
 
+					if (!item.unserializeItemNode(fileLoader, nodeItem, props)) {
+						console.log(`${tilePosition.toString()} Failed to load item ${item.getID()}.`);
+						return false;
+					}
+
+					if (isHouseTile && item.isMoveable()) {
+						const houseId = -1; // house.getId();
+						console.log(`[Warning - IOMap::loadMap] Moveable item with ID: ${item.getID()}, in house: ${houseId}, at position ${tilePosition.toString()}.`);
+						item = null;
+					} else {
+						if (item.getItemCount() <= 0) {
+							item.setItemCount(1);
+						}
+
+						if (tile) {
+							tile.internalAddThing(item);
+							item.startDecaying();
+							item.setLoadedFromMap(true);
+						} else {
+							tile = new Tile(); // CHANGE IT THERE AFTER STATIC TILE AND OTHER THINGS IMPLEMENTATION
+							tile.setGround(groundItem);
+							tile.addThing(item);
+							tile.setPosition(tilePosition);
+
+							item.startDecaying();
+							item.setLoadedFromMap(true);
+						}
+					}
 					nodeItem = nodeItem.next;
 				}
+
+				if (!tile) {
+					tile = new Tile();
+					tile.setGround(groundItem);
+					tile.setPosition(tilePosition);
+				}
+
+				tile.setFlag(tileFlags);
 				this.map.setTile(tile);
 			}
 			nodeTile = nodeTile.next;
